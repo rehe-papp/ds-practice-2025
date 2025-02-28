@@ -12,14 +12,13 @@ import fraud_detection_pb2_grpc as fraud_detection_grpc
 
 import grpc
 
-def greet(name='you'):
-    # Establish a connection with the fraud-detection gRPC service.
+def detect_fraud(total_qty):
     with grpc.insecure_channel('fraud_detection:50051') as channel:
         # Create a stub object.
-        stub = fraud_detection_grpc.HelloServiceStub(channel)
+        stub = fraud_detection_grpc.FraudDetectionServiceStub(channel)
         # Call the service through the stub object.
-        response = stub.SayHello(fraud_detection.HelloRequest(name=name))
-    return response.greeting
+        response = stub.FraudDetection(fraud_detection.FraudRequest(total_qty=total_qty))
+    return response.message
 
 # Import Flask.
 # Flask is a web framework for Python.
@@ -38,10 +37,10 @@ CORS(app, resources={r'/*': {'origins': '*'}})
 @app.route('/', methods=['GET'])
 def index():
     """
-    Responds with 'Hello, [name]' when a GET request is made to '/' endpoint.
+    Responds with 'Hello, world!' when a GET request is made to '/' endpoint.
     """
     # Test the fraud-detection gRPC service.
-    response = greet(name='orchestrator')
+    response = "Hello, world!"
     # Return the response.
     return response
 
@@ -54,6 +53,19 @@ def checkout():
     request_data = json.loads(request.data)
     # Print request object data
     print("Request Data:", request_data.get('items'))
+    print(request_data)
+
+    user_info = request_data.get('user')
+    creditCard_info = request_data.get('creditCard')
+    items = request_data.get('items')
+    billingAddress = request_data.get('billingAddress')
+
+    #spawn new threads for each microservice
+    # in each thread call the microservice and get the response
+    # join the threads
+    #decide if order approved or rejected
+    #return response
+
 
     # Dummy response following the provided YAML specification for the bookstore
     order_status_response = {
