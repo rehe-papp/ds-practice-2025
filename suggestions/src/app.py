@@ -15,7 +15,7 @@ from concurrent import futures
 
 # Create a class to define the server functions, derived from
 # suggestions_pb2_grpc.HelloServiceServicer
-class HelloService(suggestions_grpc.HelloServiceServicer):
+class SuggestionsService(suggestions_grpc.SuggestionsServiceServicer):
     # Create an RPC function to say hello
     def SayHello(self, request, context):
         # Create a HelloResponse object
@@ -31,13 +31,13 @@ def serve():
     # Create a gRPC server
     server = grpc.server(futures.ThreadPoolExecutor())
     # Add HelloService
-    suggestions_grpc.add_HelloServiceServicer_to_server(SuggestionsService(), server)
-    # Listen on port 50052
-    port = "50052"
+    suggestions_grpc.add_SuggestionsServiceServicer_to_server(SuggestionsService(), server)
+    # Listen on port 50053
+    port = "50053"
     server.add_insecure_port("[::]:" + port)
     # Start the server
     server.start()
-    print("Server started. Listening on port 50052.")
+    print("Server started. Listening on port 50053.")
     # Keep thread alive
     server.wait_for_termination()
 

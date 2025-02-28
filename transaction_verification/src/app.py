@@ -15,7 +15,7 @@ from concurrent import futures
 
 # Create a class to define the server functions, derived from
 # transaction_verification_pb2_grpc.HelloServiceServicer
-class HelloService(transaction_verification_grpc.HelloServiceServicer):
+class TransactionVerificationService(transaction_verification_grpc.TransactionVerificationServiceServicer):
     # Create an RPC function to say hello
     def SayHello(self, request, context):
         # Create a HelloResponse object
@@ -31,7 +31,7 @@ def serve():
     # Create a gRPC server
     server = grpc.server(futures.ThreadPoolExecutor())
     # Add HelloService
-    transaction_verification_grpc.add_HelloServiceServicer_to_server(TransactionVerificationService(), server)
+    transaction_verification_grpc.add_TransactionVerificationServiceServicer_to_server(TransactionVerificationService(), server)
     # Listen on port 50052
     port = "50052"
     server.add_insecure_port("[::]:" + port)
