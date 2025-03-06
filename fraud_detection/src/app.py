@@ -29,7 +29,7 @@ class FraudDetectionService(fraud_detection_grpc.FraudDetectionServiceServicer):
             response.message = "Transaction is fraud: Invalid credit card number."
         else:
             response.is_valid = True
-            response.message = "Transaction is valid."
+            response.message = "Transaction is not fraud."
         
         print(response.message)
         return response

@@ -9,6 +9,10 @@ fraud_detection_grpc_path = os.path.abspath(os.path.join(FILE, '../../../utils/p
 sys.path.insert(0, fraud_detection_grpc_path)
 import fraud_detection_pb2 as fraud_detection
 import fraud_detection_pb2_grpc as fraud_detection_grpc
+transaction_verification_grpc_path = os.path.abspath(os.path.join(FILE, '../../../utils/pb/transaction_verification'))
+sys.path.insert(0, transaction_verification_grpc_path)
+import transaction_verification_pb2 as transaction_verification
+import transaction_verification_pb2_grpc as transaction_verification_grpc
 
 import grpc
 
@@ -47,6 +51,46 @@ def detect_fraud(user, credit_card, user_comment, items, billing_address, shippi
 
         # Call the gRPC service
         response = stub.FraudDetection(request)
+    return response
+
+
+def VerifyTransaction(request_data):
+    with grpc.insecure_channel('transaction_verification:50052') as channel:
+        # Create a stub object
+        stub = transaction_verification_grpc.TransactionVerificationServiceStub(channel)
+
+        # Construct the gRPC request
+        transaction_request = transaction_verification.TransactionVerificationRequest(
+            user=transaction_verification.User(
+                name=request_data.get('user', {}).get('name', ""),
+                contact=request_data.get('user', {}).get('contact', "")
+            ),
+            creditCard=transaction_verification.CreditCard(
+                number=request_data.get('creditCard', {}).get('number', ""),
+                expirationDate=request_data.get('creditCard', {}).get('expirationDate', ""),
+                cvv=request_data.get('creditCard', {}).get('cvv', "")
+            ),
+            userComment=request_data.get('userComment', ""),
+            items=[
+                transaction_verification.Item(
+                    name=item.get('name', ""),
+                    quantity=item.get('quantity', 0)
+                ) for item in request_data.get('items', [])
+            ],
+            billingAddress=transaction_verification.Address(
+                street=request_data.get('billingAddress', {}).get('street', ""),
+                city=request_data.get('billingAddress', {}).get('city', ""),
+                state=request_data.get('billingAddress', {}).get('state', ""),
+                zip=request_data.get('billingAddress', {}).get('zip', ""),
+                country=request_data.get('billingAddress', {}).get('country', "")
+            ),
+            shippingMethod=request_data.get('shippingMethod', ""),
+            termsAccepted=request_data.get('termsAccepted', False)
+        )
+
+        # Call the service and get the response
+        response = stub.VerifyTransaction(transaction_request)
+
     return response
 # Import Flask.
 # Flask is a web framework for Python.
@@ -94,6 +138,7 @@ def checkout():
     terms_accepted = request_data.get('termsAccepted', False)
 
 
+    transaction_verification_response = VerifyTransaction(request_data)
     # Call detect_fraud with structured data
     fraud_response = detect_fraud(
         user=user_info,
@@ -111,13 +156,11 @@ def checkout():
     # join the threads
     #decide if order approved or rejected
     #return response
-    print("gg",fraud_response.is_valid)
-
 
     # Dummy response following the provided YAML specification for the bookstore
 
 
-    if fraud_response.is_valid:
+    if transaction_verification_response.is_valid and fraud_response.is_valid:
         order_status_response = {
         'orderId': '12345',
         'status': 'Order Approved',
