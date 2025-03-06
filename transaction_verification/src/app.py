@@ -18,6 +18,7 @@ from concurrent import futures
 class TransactionVerificationService(transaction_verification_grpc.TransactionVerificationServiceServicer):
     # Create an RPC function to say hello
     def VerifyTransaction(self, request, context):
+        print("Starting transaction_verification")
         response = transaction_verification.TransactionVerificationResponse()
         terms_accepted = request.termsAccepted
 

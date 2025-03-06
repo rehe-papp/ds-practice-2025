@@ -35,6 +35,8 @@ class SuggestionsService(suggestions_grpc.SuggestionsServiceServicer):
         response = suggestions.SuggestionsResponse()
         response.suggestions.extend(all_suggestions)
 
+        print(f"Suggestions response: {response}")
+
         return response
 
 

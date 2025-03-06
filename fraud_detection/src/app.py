@@ -16,6 +16,7 @@ from concurrent import futures
 #imported from the utils fraud_detection
 class FraudDetectionService(fraud_detection_grpc.FraudDetectionServiceServicer):
     def FraudDetection(self, request, context):
+        print("Starting fraud_detection")
         total_qty = sum(item.quantity for item in request.items)  # Calculate total quantity
 
         response = fraud_detection.FraudResponse()
