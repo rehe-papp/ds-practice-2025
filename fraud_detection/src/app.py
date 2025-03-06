@@ -16,13 +16,21 @@ from concurrent import futures
 #imported from the utils fraud_detection
 class FraudDetectionService(fraud_detection_grpc.FraudDetectionServiceServicer):
     def FraudDetection(self, request, context):
+        total_qty = sum(item.quantity for item in request.items)  # Calculate total quantity
+
         response = fraud_detection.FraudResponse()
-        if request.total_qty > 100:
-            response.is_fraud = True
-            response.message = "Transaction is fraud"
+        
+        # Example fraud detection rule: flag if total quantity exceeds 100
+        if total_qty > 100:
+            response.is_valid = False
+            response.message = "Transaction is fraud: Too many items ordered."
+        elif request.creditCard.number.startswith("0000"):  # Example fraud rule for invalid card numbers
+            response.is_valid = False
+            response.message = "Transaction is fraud: Invalid credit card number."
         else:
             response.is_valid = True
-            response.message = "Transaction is valid"
+            response.message = "Transaction is valid."
+        
         print(response.message)
         return response
 

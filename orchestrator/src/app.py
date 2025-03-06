@@ -12,14 +12,42 @@ import fraud_detection_pb2_grpc as fraud_detection_grpc
 
 import grpc
 
-def detect_fraud(total_qty):
+def detect_fraud(user, credit_card, user_comment, items, billing_address, shipping_method, gift_wrapping, terms_accepted):
     with grpc.insecure_channel('fraud_detection:50051') as channel:
-        # Create a stub object.
+        # Create a stub object
         stub = fraud_detection_grpc.FraudDetectionServiceStub(channel)
-        # Call the service through the stub object.
-        response = stub.FraudDetection(fraud_detection.FraudRequest(total_qty=total_qty))
-    return response.message
+        
+        # Convert items list to protobuf format
+        item_list = [fraud_detection.Item(name=item["name"], quantity=item["quantity"]) for item in items]
 
+        # Construct the FraudRequest message
+        request = fraud_detection.FraudRequest(
+            user=fraud_detection.User(
+                name=user["name"],
+                contact=user["contact"]
+            ),
+            creditCard=fraud_detection.CreditCard(
+                number=credit_card["number"],
+                expirationDate=credit_card["expirationDate"],
+                cvv=credit_card["cvv"]
+            ),
+            userComment=user_comment,
+            items=item_list,
+            billingAddress=fraud_detection.Address(
+                street=billing_address["street"],
+                city=billing_address["city"],
+                state=billing_address["state"],
+                zip=billing_address["zip"],
+                country=billing_address["country"]
+            ),
+            shippingMethod=shipping_method,
+            giftWrapping=gift_wrapping,
+            termsAccepted=terms_accepted
+        )
+
+        # Call the gRPC service
+        response = stub.FraudDetection(request)
+    return response
 # Import Flask.
 # Flask is a web framework for Python.
 # It allows you to build a web application quickly.
@@ -55,27 +83,56 @@ def checkout():
     print("Request Data:", request_data.get('items'))
     print(request_data)
 
-    user_info = request_data.get('user')
-    creditCard_info = request_data.get('creditCard')
-    items = request_data.get('items')
-    billingAddress = request_data.get('billingAddress')
+
+    user_info = request_data.get('user', {})
+    credit_card_info = request_data.get('creditCard', {})
+    items = request_data.get('items', [])
+    billing_address_info = request_data.get('billingAddress', {})
+    user_comment = request_data.get('userComment', "")
+    shipping_method = request_data.get('shippingMethod', "")
+    gift_wrapping = request_data.get('giftWrapping', False)
+    terms_accepted = request_data.get('termsAccepted', False)
+
+
+    # Call detect_fraud with structured data
+    fraud_response = detect_fraud(
+        user=user_info,
+        credit_card=credit_card_info,
+        user_comment=user_comment,
+        items=items,
+        billing_address=billing_address_info,
+        shipping_method=shipping_method,
+        gift_wrapping=gift_wrapping,
+        terms_accepted=terms_accepted
+    )
 
     #spawn new threads for each microservice
     # in each thread call the microservice and get the response
     # join the threads
     #decide if order approved or rejected
     #return response
+    print("gg",fraud_response.is_valid)
 
 
     # Dummy response following the provided YAML specification for the bookstore
-    order_status_response = {
+
+
+    if fraud_response.is_valid:
+        order_status_response = {
         'orderId': '12345',
         'status': 'Order Approved',
         'suggestedBooks': [
             {'bookId': '123', 'title': 'The Best Book', 'author': 'Author 1'},
             {'bookId': '456', 'title': 'The Second Best Book', 'author': 'Author 2'}
         ]
-    }
+        }
+    else:
+        print("Fraud_detection service detected fraud")
+        order_status_response = {
+        'orderId': '12345',
+        'status': "Order Rejected",
+        'suggestedBooks': []   
+        }
 
     return order_status_response
 
