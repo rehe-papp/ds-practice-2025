@@ -21,10 +21,10 @@ class SuggestionsService(suggestions_grpc.SuggestionsServiceServicer):
         book_ids = request.bookID  # Access the repeated field
         print(f"Received request for suggestions for book IDs: {book_ids}")
 
-        book_data = {
+        book_data = [
             {"bookID": 4,"title": "The Example Book", "author": "John Doe"},
             {"bookID": 5, "title": "Another Book", "author": "Jane Smith"},
-        }
+        ]
         
 
         all_suggestions = []

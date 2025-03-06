@@ -101,9 +101,7 @@ def VerifyTransaction(request_data):
 def GetSuggestions(book_ids):
     with grpc.insecure_channel('suggestions:50053') as channel:
         stub = suggestions_grpc.SuggestionsServiceStub(channel) #use stub
-        print(")))))))))))))))))))))" +book_ids)
         response = stub.SuggestBooks(suggestions.SuggestBooksRequest(bookID=book_ids))
-        print(")))))))))))))))))))))" + response)
     return response.suggestions #return the list of suggestions.
 
 
@@ -174,7 +172,6 @@ def checkout():
 
     # Dummy response following the provided YAML specification for the bookstore
 
-    print("---------",items)
     book_ids = []
     for item in items:
         bookid = item.get('bookid')
@@ -182,8 +179,8 @@ def checkout():
             if bookid is not None:
                 book_ids.append(int(bookid))
         except ValueError:
-            print(f"Warning: bookid '{bookid}'")
-    print("...........",book_ids)
+            print(f"Warning: bookid '{bookid}' not an integer")
+
     suggested_books = GetSuggestions(book_ids)
     suggested_books_list = []
     for book in suggested_books:
@@ -198,7 +195,6 @@ def checkout():
         'suggestedBooks': suggested_books_list
         }
     else:
-        print("Fraud_detection service detected fraud")
         order_status_response = {
         'orderId': '12345',
         'status': "Order Rejected",
