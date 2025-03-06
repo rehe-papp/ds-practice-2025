@@ -59,10 +59,14 @@ components:
           items:
             type: object
             properties:
-              name:
-                type: string
+              bookid:
+                type: integer
               quantity:
                 type: integer
+              title: 
+                type: string
+              author: 
+                type: string
         discountCode:
           type: string
         shippingMethod:

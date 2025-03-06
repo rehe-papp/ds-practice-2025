@@ -14,17 +14,17 @@ class SuggestionsServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.SayHello = channel.unary_unary(
-                '/hello.SuggestionsService/SayHello',
-                request_serializer=suggestions__pb2.HelloRequest.SerializeToString,
-                response_deserializer=suggestions__pb2.HelloResponse.FromString,
+        self.SuggestBooks = channel.unary_unary(
+                '/suggestions.SuggestionsService/SuggestBooks',
+                request_serializer=suggestions__pb2.SuggestBooksRequest.SerializeToString,
+                response_deserializer=suggestions__pb2.SuggestionsResponse.FromString,
                 )
 
 
 class SuggestionsServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def SayHello(self, request, context):
+    def SuggestBooks(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -33,14 +33,14 @@ class SuggestionsServiceServicer(object):
 
 def add_SuggestionsServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'SayHello': grpc.unary_unary_rpc_method_handler(
-                    servicer.SayHello,
-                    request_deserializer=suggestions__pb2.HelloRequest.FromString,
-                    response_serializer=suggestions__pb2.HelloResponse.SerializeToString,
+            'SuggestBooks': grpc.unary_unary_rpc_method_handler(
+                    servicer.SuggestBooks,
+                    request_deserializer=suggestions__pb2.SuggestBooksRequest.FromString,
+                    response_serializer=suggestions__pb2.SuggestionsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'hello.SuggestionsService', rpc_method_handlers)
+            'suggestions.SuggestionsService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -49,7 +49,7 @@ class SuggestionsService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def SayHello(request,
+    def SuggestBooks(request,
             target,
             options=(),
             channel_credentials=None,
@@ -59,8 +59,8 @@ class SuggestionsService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/hello.SuggestionsService/SayHello',
-            suggestions__pb2.HelloRequest.SerializeToString,
-            suggestions__pb2.HelloResponse.FromString,
+        return grpc.experimental.unary_unary(request, target, '/suggestions.SuggestionsService/SuggestBooks',
+            suggestions__pb2.SuggestBooksRequest.SerializeToString,
+            suggestions__pb2.SuggestionsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

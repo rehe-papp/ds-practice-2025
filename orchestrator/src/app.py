@@ -7,8 +7,14 @@ import os
 FILE = __file__ if '__file__' in globals() else os.getenv("PYTHONFILE", "")
 fraud_detection_grpc_path = os.path.abspath(os.path.join(FILE, '../../../utils/pb/fraud_detection'))
 sys.path.insert(0, fraud_detection_grpc_path)
+
+suggestions_grpc_path = os.path.abspath(os.path.join(FILE, '../../../utils/pb/suggestions'))
+sys.path.insert(0, suggestions_grpc_path)
+
 import fraud_detection_pb2 as fraud_detection
 import fraud_detection_pb2_grpc as fraud_detection_grpc
+import suggestions_pb2 as suggestions
+import suggestions_pb2_grpc as suggestions_grpc
 
 import grpc
 
@@ -16,7 +22,6 @@ def detect_fraud(user, credit_card, user_comment, items, billing_address, shippi
     with grpc.insecure_channel('fraud_detection:50051') as channel:
         # Create a stub object
         stub = fraud_detection_grpc.FraudDetectionServiceStub(channel)
-        
         # Convert items list to protobuf format
         item_list = [fraud_detection.Item(name=item["name"], quantity=item["quantity"]) for item in items]
 
@@ -48,6 +53,14 @@ def detect_fraud(user, credit_card, user_comment, items, billing_address, shippi
         # Call the gRPC service
         response = stub.FraudDetection(request)
     return response
+
+def GetSuggestions(book_ids):
+    with grpc.insecure_channel('suggestions:50053') as channel:
+        stub = suggestions_grpc.SuggestionsServiceStub(channel) #use stub
+        response = stub.SuggestBooks(suggestions.SuggestBooksRequest(bookID=book_ids))
+    return response.suggestions #return the list of suggestions.
+
+
 # Import Flask.
 # Flask is a web framework for Python.
 # It allows you to build a web application quickly.
@@ -116,22 +129,27 @@ def checkout():
 
     # Dummy response following the provided YAML specification for the bookstore
 
+    
+    book_ids = [item.get('bookid') for item in items if item.get('bookid')]
+    suggested_books = GetSuggestions(book_ids)
+    suggested_books_list = []
+    for book in suggested_books:
+        suggested_books_list.append({'bookid': book.bookID, 'title': book.title, 'bookid': book.author})
+
+
 
     if fraud_response.is_valid:
         order_status_response = {
         'orderId': '12345',
         'status': 'Order Approved',
-        'suggestedBooks': [
-            {'bookId': '123', 'title': 'The Best Book', 'author': 'Author 1'},
-            {'bookId': '456', 'title': 'The Second Best Book', 'author': 'Author 2'}
-        ]
+        'suggestedBooks': suggested_books_list
         }
     else:
         print("Fraud_detection service detected fraud")
         order_status_response = {
         'orderId': '12345',
         'status': "Order Rejected",
-        'suggestedBooks': []   
+        'suggestedBooks': suggested_books_list
         }
 
     return order_status_response
