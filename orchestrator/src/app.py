@@ -27,7 +27,7 @@ def detect_fraud(user, credit_card, user_comment, items, billing_address, shippi
         # Create a stub object
         stub = fraud_detection_grpc.FraudDetectionServiceStub(channel)
         # Convert items list to protobuf format
-        item_list = [fraud_detection.Item(name=item["name"], quantity=item["quantity"]) for item in items]
+        item_list = [fraud_detection.Item(bookid=item["bookid"], quantity=item["quantity"]) for item in items]
 
         # Construct the FraudRequest message
         request = fraud_detection.FraudRequest(
@@ -78,7 +78,7 @@ def VerifyTransaction(request_data):
             userComment=request_data.get('userComment', ""),
             items=[
                 transaction_verification.Item(
-                    name=item.get('name', ""),
+                    bookid=item.get('bookid', ""),
                     quantity=item.get('quantity', 0)
                 ) for item in request_data.get('items', [])
             ],
@@ -101,7 +101,9 @@ def VerifyTransaction(request_data):
 def GetSuggestions(book_ids):
     with grpc.insecure_channel('suggestions:50053') as channel:
         stub = suggestions_grpc.SuggestionsServiceStub(channel) #use stub
+        print(")))))))))))))))))))))" +book_ids)
         response = stub.SuggestBooks(suggestions.SuggestBooksRequest(bookID=book_ids))
+        print(")))))))))))))))))))))" + response)
     return response.suggestions #return the list of suggestions.
 
 
@@ -172,12 +174,20 @@ def checkout():
 
     # Dummy response following the provided YAML specification for the bookstore
 
-    
-    book_ids = [item.get('bookid') for item in items if item.get('bookid')]
+    print("---------",items)
+    book_ids = []
+    for item in items:
+        bookid = item.get('bookid')
+        try:
+            if bookid is not None:
+                book_ids.append(int(bookid))
+        except ValueError:
+            print(f"Warning: bookid '{bookid}'")
+    print("...........",book_ids)
     suggested_books = GetSuggestions(book_ids)
     suggested_books_list = []
     for book in suggested_books:
-        suggested_books_list.append({'bookid': book.bookID, 'title': book.title, 'bookid': book.author})
+        suggested_books_list.append({'bookid': book.bookID, 'title': book.title, 'author': book.author})
 
 
 

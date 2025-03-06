@@ -8,8 +8,8 @@ DESCRIPTOR: _descriptor.FileDescriptor
 class SuggestBooksRequest(_message.Message):
     __slots__ = ("bookID",)
     BOOKID_FIELD_NUMBER: _ClassVar[int]
-    bookID: str
-    def __init__(self, bookID: _Optional[str] = ...) -> None: ...
+    bookID: _containers.RepeatedScalarFieldContainer[int]
+    def __init__(self, bookID: _Optional[_Iterable[int]] = ...) -> None: ...
 
 class BookSuggestion(_message.Message):
     __slots__ = ("bookID", "title", "author")

@@ -17,36 +17,27 @@ from concurrent import futures
 # suggestions_pb2_grpc.HelloServiceServicer
 class SuggestionsService(suggestions_grpc.SuggestionsServiceServicer):
     # Create an RPC function to say hello
-
     def SuggestBooks(self, request, context):
         book_ids = request.bookID  # Access the repeated field
         print(f"Received request for suggestions for book IDs: {book_ids}")
 
+        book_data = {
+            {"bookID": 4,"title": "The Example Book", "author": "John Doe"},
+            {"bookID": 5, "title": "Another Book", "author": "Jane Smith"},
+        }
+        
+
         all_suggestions = []
-        for book_id in book_ids:
-            suggested_book_ids = self.get_book_suggestions(book_id)
-            all_suggestions.extend(suggested_book_ids)
+        for book in book_data:
+            all_suggestions.append(suggestions.BookSuggestion(bookID=book["bookID"], title=book["title"], author=book["author"]))
+
 
         response = suggestions.SuggestionsResponse()
         response.suggestions.extend(all_suggestions)
 
         return response
 
-    def get_book_suggestions(self, book_ids):
-        """Retrieves book suggestions from in memory data."""
-        book_data = {
-            "123": {"title": "The Example Book", "author": "John Doe"},
-            "456": {"title": "Another Book", "author": "Jane Smith"},
-        }
-        
 
-        all_suggestions = []
-        for book_id in book_ids:
-            if book_id in book_data:
-                book = book_data[book_id]
-                all_suggestions.append(suggestions.BookSuggestion(bookID=book_id, title=book["title"], author=book["author"]))
-
-        return all_suggestions
 
 def serve():
     # Create a gRPC server

@@ -7,7 +7,7 @@ service SuggestionsService {
 }
 
 message SuggestBooksRequest {
-    string bookID = 1;
+    repeated int64 bookID = 1;
 }
 
 message BookSuggestion {
