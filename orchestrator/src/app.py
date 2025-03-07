@@ -149,7 +149,7 @@ def checkout():
     request_data = json.loads(request.data)
     # Print request object data
     print("Request Data:", request_data.get('items'))
-    print(request_data)
+    #print(request_data)
 
     items = request_data.get('items', [])
 
