@@ -5,11 +5,26 @@ from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Map
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class VectorClock(_message.Message):
+    __slots__ = ("clock",)
+    class ClockEntry(_message.Message):
+        __slots__ = ("key", "value")
+        KEY_FIELD_NUMBER: _ClassVar[int]
+        VALUE_FIELD_NUMBER: _ClassVar[int]
+        key: str
+        value: int
+        def __init__(self, key: _Optional[str] = ..., value: _Optional[int] = ...) -> None: ...
+    CLOCK_FIELD_NUMBER: _ClassVar[int]
+    clock: _containers.ScalarMap[str, int]
+    def __init__(self, clock: _Optional[_Mapping[str, int]] = ...) -> None: ...
+
 class SuggestBooksRequest(_message.Message):
-    __slots__ = ("bookID",)
+    __slots__ = ("bookID", "vector_clock")
     BOOKID_FIELD_NUMBER: _ClassVar[int]
+    VECTOR_CLOCK_FIELD_NUMBER: _ClassVar[int]
     bookID: _containers.RepeatedScalarFieldContainer[int]
-    def __init__(self, bookID: _Optional[_Iterable[int]] = ...) -> None: ...
+    vector_clock: VectorClock
+    def __init__(self, bookID: _Optional[_Iterable[int]] = ..., vector_clock: _Optional[_Union[VectorClock, _Mapping]] = ...) -> None: ...
 
 class BookSuggestion(_message.Message):
     __slots__ = ("bookID", "title", "author")
@@ -22,7 +37,9 @@ class BookSuggestion(_message.Message):
     def __init__(self, bookID: _Optional[int] = ..., title: _Optional[str] = ..., author: _Optional[str] = ...) -> None: ...
 
 class SuggestionsResponse(_message.Message):
-    __slots__ = ("suggestions",)
+    __slots__ = ("suggestions", "vector_clock")
     SUGGESTIONS_FIELD_NUMBER: _ClassVar[int]
+    VECTOR_CLOCK_FIELD_NUMBER: _ClassVar[int]
     suggestions: _containers.RepeatedCompositeFieldContainer[BookSuggestion]
-    def __init__(self, suggestions: _Optional[_Iterable[_Union[BookSuggestion, _Mapping]]] = ...) -> None: ...
+    vector_clock: VectorClock
+    def __init__(self, suggestions: _Optional[_Iterable[_Union[BookSuggestion, _Mapping]]] = ..., vector_clock: _Optional[_Union[VectorClock, _Mapping]] = ...) -> None: ...

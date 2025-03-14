@@ -6,8 +6,13 @@ service SuggestionsService {
     rpc SuggestBooks(SuggestBooksRequest) returns (SuggestionsResponse);
 }
 
+message VectorClock {
+  map<string, int32> clock = 1;
+}
+
 message SuggestBooksRequest {
     repeated int64 bookID = 1;
+    VectorClock vector_clock = 2;
 }
 
 message BookSuggestion {
@@ -18,6 +23,6 @@ message BookSuggestion {
 
 message SuggestionsResponse {
     repeated BookSuggestion suggestions = 1;
-
+    VectorClock vector_clock = 2;
 }
 
