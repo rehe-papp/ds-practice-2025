@@ -14,17 +14,39 @@ class TransactionVerificationServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
-        self.VerifyTransaction = channel.unary_unary(
-                '/transaction_verification.TransactionVerificationService/VerifyTransaction',
+        self.InitializeVerification = channel.unary_unary(
+                '/transaction_verification.TransactionVerificationService/InitializeVerification',
                 request_serializer=transaction__verification__pb2.TransactionVerificationRequest.SerializeToString,
                 response_deserializer=transaction__verification__pb2.TransactionVerificationResponse.FromString,
+                )
+        self.ProcessVerification = channel.unary_unary(
+                '/transaction_verification.TransactionVerificationService/ProcessVerification',
+                request_serializer=transaction__verification__pb2.ProcessVerificationRequest.SerializeToString,
+                response_deserializer=transaction__verification__pb2.TransactionVerificationResponse.FromString,
+                )
+        self.ClearData = channel.unary_unary(
+                '/transaction_verification.TransactionVerificationService/ClearData',
+                request_serializer=transaction__verification__pb2.ClearDataRequest.SerializeToString,
+                response_deserializer=transaction__verification__pb2.ClearDataResponse.FromString,
                 )
 
 
 class TransactionVerificationServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
-    def VerifyTransaction(self, request, context):
+    def InitializeVerification(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ProcessVerification(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ClearData(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -33,10 +55,20 @@ class TransactionVerificationServiceServicer(object):
 
 def add_TransactionVerificationServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
-            'VerifyTransaction': grpc.unary_unary_rpc_method_handler(
-                    servicer.VerifyTransaction,
+            'InitializeVerification': grpc.unary_unary_rpc_method_handler(
+                    servicer.InitializeVerification,
                     request_deserializer=transaction__verification__pb2.TransactionVerificationRequest.FromString,
                     response_serializer=transaction__verification__pb2.TransactionVerificationResponse.SerializeToString,
+            ),
+            'ProcessVerification': grpc.unary_unary_rpc_method_handler(
+                    servicer.ProcessVerification,
+                    request_deserializer=transaction__verification__pb2.ProcessVerificationRequest.FromString,
+                    response_serializer=transaction__verification__pb2.TransactionVerificationResponse.SerializeToString,
+            ),
+            'ClearData': grpc.unary_unary_rpc_method_handler(
+                    servicer.ClearData,
+                    request_deserializer=transaction__verification__pb2.ClearDataRequest.FromString,
+                    response_serializer=transaction__verification__pb2.ClearDataResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -49,7 +81,7 @@ class TransactionVerificationService(object):
     """Missing associated documentation comment in .proto file."""
 
     @staticmethod
-    def VerifyTransaction(request,
+    def InitializeVerification(request,
             target,
             options=(),
             channel_credentials=None,
@@ -59,8 +91,42 @@ class TransactionVerificationService(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/transaction_verification.TransactionVerificationService/VerifyTransaction',
+        return grpc.experimental.unary_unary(request, target, '/transaction_verification.TransactionVerificationService/InitializeVerification',
             transaction__verification__pb2.TransactionVerificationRequest.SerializeToString,
             transaction__verification__pb2.TransactionVerificationResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ProcessVerification(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/transaction_verification.TransactionVerificationService/ProcessVerification',
+            transaction__verification__pb2.ProcessVerificationRequest.SerializeToString,
+            transaction__verification__pb2.TransactionVerificationResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def ClearData(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/transaction_verification.TransactionVerificationService/ClearData',
+            transaction__verification__pb2.ClearDataRequest.SerializeToString,
+            transaction__verification__pb2.ClearDataResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

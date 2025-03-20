@@ -3,16 +3,19 @@ syntax = "proto3";
 package fraud_detection;
 
 service FraudDetectionService {
-    rpc FraudDetection (FraudRequest) returns (FraudResponse);
-}
-
-message User {
-    string name = 1;
-    string contact = 2;
+  rpc InitializeFraud (FraudRequest) returns (FraudResponse);
+  rpc ProcessFraud (ProcessFraudRequest) returns (FraudResponse);
+  rpc ClearData(ClearDataRequest) returns (ClearDataResponse);
 }
 
 message VectorClock {
   map<string, int32> clock = 1;
+}
+
+
+message User {
+    string name = 1;
+    string contact = 2;
 }
 
 message CreditCard {
@@ -22,7 +25,7 @@ message CreditCard {
 }
 
 message Item {
-    int64 bookid = 1;
+    int32 bookid = 1;
     int32 quantity = 2;
 }
 
@@ -35,20 +38,35 @@ message Address {
 }
 
 message FraudRequest {
-    User user = 1;
-    CreditCard creditCard = 2;
-    string userComment = 3;
-    repeated Item items = 4;
-    Address billingAddress = 5;
-    string shippingMethod = 6;
-    bool giftWrapping = 7;
-    bool termsAccepted = 8;
-    VectorClock vector_clock = 9;
+  string order_id = 1;
+  User user = 2;
+  CreditCard creditCard = 3;
+  repeated Item items = 4;
+  Address billingAddress = 5;
+  string userComment = 6;
+  string shippingMethod = 7;
+  bool giftWrapping = 8;
+  bool termsAccepted = 9;
+  VectorClock vector_clock = 10;
 }
 
 message FraudResponse {
-    bool is_valid = 1;
-    string message = 2;
-    VectorClock vector_clock = 3;
+  bool is_valid = 1;
+  string message = 2;
+  VectorClock vector_clock = 3;
+}
+
+message ProcessFraudRequest {
+    string order_id = 1;
+    VectorClock vector_clock = 2;
+}
+
+message ClearDataRequest {
+    string order_id = 1;
+    VectorClock vector_clock = 2;
+}
+
+message ClearDataResponse {
+    bool success = 1;
 }
 

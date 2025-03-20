@@ -2,27 +2,47 @@ syntax = "proto3";
 
 package suggestions;
 
+
 service SuggestionsService {
-    rpc SuggestBooks(SuggestBooksRequest) returns (SuggestionsResponse);
+    rpc InitializeSuggestions (SuggestBooksRequest) returns (SuggestionsResponse);
+    rpc ProcessSuggestions (ProcessSuggestionsRequest) returns (SuggestionsResponse);
+    rpc ClearData(ClearDataRequest) returns (ClearDataResponse);
 }
+
 
 message VectorClock {
   map<string, int32> clock = 1;
 }
 
-message SuggestBooksRequest {
-    repeated int64 bookID = 1;
-    VectorClock vector_clock = 2;
-}
-
-message BookSuggestion {
-    int64 bookID = 1;
+message Book {
+    int32 bookID = 1;
     string title = 2;
     string author = 3;
 }
 
+message SuggestBooksRequest {
+    string order_id = 1;
+    repeated int32 bookID = 2;
+    VectorClock vector_clock = 3;
+}
+
 message SuggestionsResponse {
-    repeated BookSuggestion suggestions = 1;
+    bool error = 1;
+    string message = 2;
+    repeated Book suggestions = 3;
+    VectorClock vector_clock = 4;
+}
+
+message ProcessSuggestionsRequest {
+    string order_id = 1;
     VectorClock vector_clock = 2;
 }
 
+message ClearDataRequest {
+    string order_id = 1;
+    VectorClock vector_clock = 2;
+}
+
+message ClearDataResponse {
+    bool success = 1;
+}

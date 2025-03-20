@@ -1,6 +1,9 @@
 import sys
 import os
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import uuid
+import json
+import traceback
 
 # This set of lines are needed to import the gRPC stubs.
 # The path of the stubs is relative to the current file, or absolute inside the container.
@@ -21,106 +24,140 @@ import suggestions_pb2 as suggestions
 import suggestions_pb2_grpc as suggestions_grpc
 
 import grpc
-
-def DetectFraud(request_data):
+    
+def initialize_fraud(order_id, request_data, vector_clock):
     with grpc.insecure_channel('fraud_detection:50051') as channel:
-        # Create a stub object
         stub = fraud_detection_grpc.FraudDetectionServiceStub(channel)
 
-        user = request_data.get('user', {})
-        credit_card = request_data.get('creditCard', {})
-        items = request_data.get('items', [])
-        billing_address = request_data.get('billingAddress', {})
-        user_comment = request_data.get('userComment', "")
-        shipping_method = request_data.get('shippingMethod', "")
-        gift_wrapping = request_data.get('giftWrapping', False)
-        terms_accepted = request_data.get('termsAccepted', False)
-
-
-        # Convert items list to protobuf format
-        item_list = [fraud_detection.Item(bookid=item["bookid"], quantity=item["quantity"]) for item in items]
-
-        # Construct the FraudRequest message
-        request = fraud_detection.FraudRequest(
-            user=fraud_detection.User(
-                name=user["name"],
-                contact=user["contact"]
-            ),
-            creditCard=fraud_detection.CreditCard(
-                number=credit_card["number"],
-                expirationDate=credit_card["expirationDate"],
-                cvv=credit_card["cvv"]
-            ),
-            userComment=user_comment,
-            items=item_list,
-            billingAddress=fraud_detection.Address(
-                street=billing_address["street"],
-                city=billing_address["city"],
-                state=billing_address["state"],
-                zip=billing_address["zip"],
-                country=billing_address["country"]
-            ),
-            shippingMethod=shipping_method,
-            giftWrapping=gift_wrapping,
-            termsAccepted=terms_accepted
+        user = fraud_detection.User(
+            name=request_data.get('user', {}).get('name', ""),
+            contact=request_data.get('user', {}).get('contact', "")
         )
 
-        # Call the gRPC service
-        response = stub.FraudDetection(request)
-    return response
+        credit_card = fraud_detection.CreditCard(
+            number=request_data.get('creditCard', {}).get('number', ""),
+            expirationDate=request_data.get('creditCard', {}).get('expirationDate', ""),
+            cvv=request_data.get('creditCard', {}).get('cvv', "")
+        )
 
+        items = [
+            fraud_detection.Item(bookid=item.get('bookid', 0), quantity=item.get('quantity', 0))
+            for item in request_data.get('items', [])
+        ]
 
-def VerifyTransaction(request_data):
+        billing_address = fraud_detection.Address(
+            street=request_data.get('billingAddress', {}).get('street', ""),
+            city=request_data.get('billingAddress', {}).get('city', ""),
+            state=request_data.get('billingAddress', {}).get('state', ""),
+            zip=request_data.get('billingAddress', {}).get('zip', ""),
+            country=request_data.get('billingAddress', {}).get('country', "")
+        )
+
+        request = fraud_detection.FraudRequest(
+            order_id=order_id,
+            user=user,
+            creditCard=credit_card,
+            items=items,
+            billingAddress=billing_address,
+            userComment=request_data.get('userComment', ""),
+            shippingMethod=request_data.get('shippingMethod', ""),
+            giftWrapping=request_data.get('giftWrapping', False),
+            termsAccepted=request_data.get('termsAccepted', False),
+            vector_clock=fraud_detection.VectorClock(clock=vector_clock) #add vector clock
+        )
+
+        response = stub.InitializeFraud(request)
+        return response
+    
+def process_fraud(order_id, vector_clock):
+    with grpc.insecure_channel('fraud_detection:50051') as channel:
+        stub = fraud_detection_grpc.FraudDetectionServiceStub(channel)
+        request = fraud_detection.ProcessFraudRequest(order_id=order_id, vector_clock=fraud_detection.VectorClock(clock=vector_clock))
+        response = stub.ProcessFraud(request)
+        return response
+
+def initialize_verification(order_id, request_data, vector_clock):
     with grpc.insecure_channel('transaction_verification:50052') as channel:
-        # Create a stub object
         stub = transaction_verification_grpc.TransactionVerificationServiceStub(channel)
 
-        # Construct the gRPC request
-        transaction_request = transaction_verification.TransactionVerificationRequest(
-            user=transaction_verification.User(
-                name=request_data.get('user', {}).get('name', ""),
-                contact=request_data.get('user', {}).get('contact', "")
-            ),
-            creditCard=transaction_verification.CreditCard(
-                number=request_data.get('creditCard', {}).get('number', ""),
-                expirationDate=request_data.get('creditCard', {}).get('expirationDate', ""),
-                cvv=request_data.get('creditCard', {}).get('cvv', "")
-            ),
-            userComment=request_data.get('userComment', ""),
-            items=[
-                transaction_verification.Item(
-                    bookid=item.get('bookid', ""),
-                    quantity=item.get('quantity', 0)
-                ) for item in request_data.get('items', [])
-            ],
-            billingAddress=transaction_verification.Address(
-                street=request_data.get('billingAddress', {}).get('street', ""),
-                city=request_data.get('billingAddress', {}).get('city', ""),
-                state=request_data.get('billingAddress', {}).get('state', ""),
-                zip=request_data.get('billingAddress', {}).get('zip', ""),
-                country=request_data.get('billingAddress', {}).get('country', "")
-            ),
-            shippingMethod=request_data.get('shippingMethod', ""),
-            termsAccepted=request_data.get('termsAccepted', False)
+        user = transaction_verification.User(
+            name=request_data.get('user', {}).get('name', ""),
+            contact=request_data.get('user', {}).get('contact', "")
         )
 
-        # Call the service and get the response
-        response = stub.VerifyTransaction(transaction_request)
+        credit_card = transaction_verification.CreditCard(
+            number=request_data.get('creditCard', {}).get('number', ""),
+            expirationDate=request_data.get('creditCard', {}).get('expirationDate', ""),
+            cvv=request_data.get('creditCard', {}).get('cvv', "")
+        )
 
-    return response
+        items = [
+            transaction_verification.Item(bookid=item.get('bookid', 0), quantity=item.get('quantity', 0))
+            for item in request_data.get('items', [])
+        ]
 
-def GetSuggestions(book_ids):
+        billing_address = transaction_verification.Address(
+            street=request_data.get('billingAddress', {}).get('street', ""),
+            city=request_data.get('billingAddress', {}).get('city', ""),
+            state=request_data.get('billingAddress', {}).get('state', ""),
+            zip=request_data.get('billingAddress', {}).get('zip', ""),
+            country=request_data.get('billingAddress', {}).get('country', "")
+        )
+
+        request = transaction_verification.TransactionVerificationRequest(
+            order_id=order_id,
+            user=user,
+            creditCard=credit_card,
+            items=items,
+            billingAddress=billing_address,
+            userComment=request_data.get('userComment', ""),
+            shippingMethod=request_data.get('shippingMethod', ""),
+            termsAccepted=request_data.get('termsAccepted', False),
+            vector_clock=transaction_verification.VectorClock(clock=vector_clock)
+        )
+        response = stub.InitializeVerification(request)
+        return response
+
+def process_verification(order_id, vector_clock, terms_accepted):
+    with grpc.insecure_channel('transaction_verification:50052') as channel:
+        stub = transaction_verification_grpc.TransactionVerificationServiceStub(channel)
+        request = transaction_verification.ProcessVerificationRequest(
+            order_id=order_id, 
+            vector_clock=transaction_verification.VectorClock(clock=vector_clock), 
+            termsAccepted=terms_accepted)
+        response = stub.ProcessVerification(request)
+        return response
+
+def initialize_suggestions(order_id, book_ids, vector_clock):
     with grpc.insecure_channel('suggestions:50053') as channel:
-        stub = suggestions_grpc.SuggestionsServiceStub(channel) #use stub
-        response = stub.SuggestBooks(suggestions.SuggestBooksRequest(bookID=book_ids))
-    return response.suggestions #return the list of suggestions.
+        stub = suggestions_grpc.SuggestionsServiceStub(channel)
+        request = suggestions.SuggestBooksRequest(order_id=order_id, bookID=book_ids, vector_clock=suggestions.VectorClock(clock=vector_clock))
+        response = stub.InitializeSuggestions(request)
+        return response
 
+def process_suggestions(order_id, vector_clock):
+    with grpc.insecure_channel('suggestions:50053') as channel:
+        stub = suggestions_grpc.SuggestionsServiceStub(channel)
+        request = suggestions.ProcessSuggestionsRequest(order_id=order_id, vector_clock=suggestions.VectorClock(clock=vector_clock))
+        response = stub.ProcessSuggestions(request)
+        return response
+
+def broadcast_clear(order_id, final_vector_clock):
+    with grpc.insecure_channel('fraud_detection:50051') as channel:
+        stub = fraud_detection_grpc.FraudDetectionServiceStub(channel)
+        stub.ClearData(fraud_detection.ClearDataRequest(order_id=order_id, vector_clock=fraud_detection.VectorClock(clock=final_vector_clock)))
+    with grpc.insecure_channel('transaction_verification:50052') as channel:
+        stub = transaction_verification_grpc.TransactionVerificationServiceStub(channel)
+        stub.ClearData(transaction_verification.ClearDataRequest(order_id=order_id, vector_clock=transaction_verification.VectorClock(clock=final_vector_clock)))
+    with grpc.insecure_channel('suggestions:50053') as channel:
+        stub = suggestions_grpc.SuggestionsServiceStub(channel)
+        stub.ClearData(suggestions.ClearDataRequest(order_id=order_id, vector_clock=suggestions.VectorClock(clock=final_vector_clock)))
 
 # Import Flask.
 # Flask is a web framework for Python.
 # It allows you to build a web application quickly.
 # For more information, see https://flask.palletsprojects.com/en/latest/
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 import json
 
@@ -141,70 +178,68 @@ def index():
     return response
 
 @app.route('/checkout', methods=['POST'])
+
 def checkout():
-    """
-    Responds with a JSON object containing the order ID, status, and suggested books.
-    """
-    # Get request object data to json
     request_data = json.loads(request.data)
-    # Print request object data
-    print("Request Data:", request_data.get('items'))
-    #print(request_data)
+    order_id = str(uuid.uuid4())
+    book_ids = [int(item.get('bookid')) for item in request_data.get('items', []) if item.get('bookid') is not None]
+    vector_clock = {"orchestrator": 1}
 
-    items = request_data.get('items', [])
-
-    # Dummy response following the provided YAML specification for the bookstore
-
-    book_ids = []
-    for item in items:
-        bookid = item.get('bookid')
-        try:
-            if bookid is not None:
-                book_ids.append(int(bookid))
-        except ValueError:
-            print(f"Warning: bookid '{bookid}' not an integer")
-
-    #spawn new threads for each microservice
-    # in each thread call the microservice and get the response
-    # join the threads
-    #decide if order approved or rejected
-    #return response
-
-    
     try:
         with ThreadPoolExecutor(max_workers=3) as executor:
-            print("Starting threads")
-            # Submit tasks to the thread pool
-            future_1 = executor.submit(DetectFraud, request_data)
-            future_2 = executor.submit(VerifyTransaction, request_data)
-            future_3 = executor.submit(GetSuggestions, book_ids)
-            
-            # Wait for all tasks to complete
-            fraud_response = future_1.result()
-            transaction_verification_response = future_2.result()
-            suggested_books = future_3.result()
+            futures = {
+                executor.submit(initialize_fraud, order_id, request_data, vector_clock): "fraud",
+                executor.submit(initialize_verification, order_id, request_data, vector_clock): "verification",
+                executor.submit(initialize_suggestions, order_id, book_ids, vector_clock): "suggestions",
+            }
+
+            for future in as_completed(futures):
+                result = future.result()
+                if result and hasattr(result, 'error') and result.error:
+                    broadcast_clear(order_id, vector_clock)
+                    return jsonify({"error": {"code": "500", "message": result.message}}), 500
+
+        vector_clock["orchestrator"] += 1
+
+        fraud_result = process_fraud(order_id, vector_clock)
+        if not fraud_result.is_valid:
+            broadcast_clear(order_id, vector_clock)
+            return jsonify({"error": {"code": "400", "message": fraud_result.message}}), 400
+
+        vector_clock["orchestrator"] += 1
+
+        verification_result = process_verification(order_id, vector_clock, request_data.get('termsAccepted', False)) #added the terms accepted parameter.
+        if not verification_result.is_valid:
+            broadcast_clear(order_id, vector_clock)
+            return jsonify({"error": {"code": "400", "message": verification_result.message}}), 400
+
+        vector_clock["orchestrator"] += 1
+
+        suggestions_result = process_suggestions(order_id, vector_clock)
+        suggested_books_list = [{'bookid': book.bookID, 'title': book.title, 'author': book.author} for book in suggestions_result.suggestions]
+
+        broadcast_clear(order_id, vector_clock)
+
+        return jsonify({'orderId': order_id, 'status': 'Order Approved', 'suggestedBooks': suggested_books_list})
+
+    except grpc.RpcError as e:
+        status_code = e.code()
+        error_message = e.details()
+        print(f"gRPC error: {status_code}, {error_message}")
     except Exception as e:
-        print(e)
-        return {"error": {"code": "500","message": "Internal Server Error"}}, 500
+        error_message = str(e)
+        print(f"Unexpected error: {error_message}")
+        traceback.print_exc()
+        status_code = "500"
+        error_message = error_message
 
-    suggested_books_list = []
-    for book in suggested_books:
-        suggested_books_list.append({'bookid': book.bookID, 'title': book.title, 'author': book.author})
-
-    if transaction_verification_response.is_valid and fraud_response.is_valid:
-        order_status_response = {
-        'orderId': '12345',
-        'status': 'Order Approved',
-        'suggestedBooks': suggested_books_list
+    return jsonify({
+        "error": {
+            "code": "500",
+            "message": "Internal Server Error",
+            "details": f"gRPC status: {status_code}, details: {error_message}",
         }
-    else:
-        order_status_response = {
-        'orderId': '12345',
-        'status': "Order Rejected",
-        'suggestedBooks': suggested_books_list
-        }
-
-    return order_status_response
+    }), 500
 
 
 if __name__ == '__main__':

@@ -59,24 +59,26 @@ class Address(_message.Message):
     def __init__(self, street: _Optional[str] = ..., city: _Optional[str] = ..., state: _Optional[str] = ..., zip: _Optional[str] = ..., country: _Optional[str] = ...) -> None: ...
 
 class TransactionVerificationRequest(_message.Message):
-    __slots__ = ("user", "creditCard", "userComment", "items", "billingAddress", "shippingMethod", "termsAccepted", "vector_clock")
+    __slots__ = ("order_id", "user", "creditCard", "items", "billingAddress", "userComment", "shippingMethod", "termsAccepted", "vector_clock")
+    ORDER_ID_FIELD_NUMBER: _ClassVar[int]
     USER_FIELD_NUMBER: _ClassVar[int]
     CREDITCARD_FIELD_NUMBER: _ClassVar[int]
-    USERCOMMENT_FIELD_NUMBER: _ClassVar[int]
     ITEMS_FIELD_NUMBER: _ClassVar[int]
     BILLINGADDRESS_FIELD_NUMBER: _ClassVar[int]
+    USERCOMMENT_FIELD_NUMBER: _ClassVar[int]
     SHIPPINGMETHOD_FIELD_NUMBER: _ClassVar[int]
     TERMSACCEPTED_FIELD_NUMBER: _ClassVar[int]
     VECTOR_CLOCK_FIELD_NUMBER: _ClassVar[int]
+    order_id: str
     user: User
     creditCard: CreditCard
-    userComment: str
     items: _containers.RepeatedCompositeFieldContainer[Item]
     billingAddress: Address
+    userComment: str
     shippingMethod: str
     termsAccepted: bool
     vector_clock: VectorClock
-    def __init__(self, user: _Optional[_Union[User, _Mapping]] = ..., creditCard: _Optional[_Union[CreditCard, _Mapping]] = ..., userComment: _Optional[str] = ..., items: _Optional[_Iterable[_Union[Item, _Mapping]]] = ..., billingAddress: _Optional[_Union[Address, _Mapping]] = ..., shippingMethod: _Optional[str] = ..., termsAccepted: bool = ..., vector_clock: _Optional[_Union[VectorClock, _Mapping]] = ...) -> None: ...
+    def __init__(self, order_id: _Optional[str] = ..., user: _Optional[_Union[User, _Mapping]] = ..., creditCard: _Optional[_Union[CreditCard, _Mapping]] = ..., items: _Optional[_Iterable[_Union[Item, _Mapping]]] = ..., billingAddress: _Optional[_Union[Address, _Mapping]] = ..., userComment: _Optional[str] = ..., shippingMethod: _Optional[str] = ..., termsAccepted: bool = ..., vector_clock: _Optional[_Union[VectorClock, _Mapping]] = ...) -> None: ...
 
 class TransactionVerificationResponse(_message.Message):
     __slots__ = ("is_valid", "message", "vector_clock")
@@ -87,3 +89,27 @@ class TransactionVerificationResponse(_message.Message):
     message: str
     vector_clock: VectorClock
     def __init__(self, is_valid: bool = ..., message: _Optional[str] = ..., vector_clock: _Optional[_Union[VectorClock, _Mapping]] = ...) -> None: ...
+
+class ProcessVerificationRequest(_message.Message):
+    __slots__ = ("order_id", "vector_clock", "termsAccepted")
+    ORDER_ID_FIELD_NUMBER: _ClassVar[int]
+    VECTOR_CLOCK_FIELD_NUMBER: _ClassVar[int]
+    TERMSACCEPTED_FIELD_NUMBER: _ClassVar[int]
+    order_id: str
+    vector_clock: VectorClock
+    termsAccepted: bool
+    def __init__(self, order_id: _Optional[str] = ..., vector_clock: _Optional[_Union[VectorClock, _Mapping]] = ..., termsAccepted: bool = ...) -> None: ...
+
+class ClearDataRequest(_message.Message):
+    __slots__ = ("order_id", "vector_clock")
+    ORDER_ID_FIELD_NUMBER: _ClassVar[int]
+    VECTOR_CLOCK_FIELD_NUMBER: _ClassVar[int]
+    order_id: str
+    vector_clock: VectorClock
+    def __init__(self, order_id: _Optional[str] = ..., vector_clock: _Optional[_Union[VectorClock, _Mapping]] = ...) -> None: ...
+
+class ClearDataResponse(_message.Message):
+    __slots__ = ("success",)
+    SUCCESS_FIELD_NUMBER: _ClassVar[int]
+    success: bool
+    def __init__(self, success: bool = ...) -> None: ...

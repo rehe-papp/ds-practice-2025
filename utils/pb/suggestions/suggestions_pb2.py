@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11suggestions.proto\x12\x0bsuggestions\"o\n\x0bVectorClock\x12\x32\n\x05\x63lock\x18\x01 \x03(\x0b\x32#.suggestions.VectorClock.ClockEntry\x1a,\n\nClockEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"U\n\x13SuggestBooksRequest\x12\x0e\n\x06\x62ookID\x18\x01 \x03(\x03\x12.\n\x0cvector_clock\x18\x02 \x01(\x0b\x32\x18.suggestions.VectorClock\"?\n\x0e\x42ookSuggestion\x12\x0e\n\x06\x62ookID\x18\x01 \x01(\x03\x12\r\n\x05title\x18\x02 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x03 \x01(\t\"w\n\x13SuggestionsResponse\x12\x30\n\x0bsuggestions\x18\x01 \x03(\x0b\x32\x1b.suggestions.BookSuggestion\x12.\n\x0cvector_clock\x18\x02 \x01(\x0b\x32\x18.suggestions.VectorClock2h\n\x12SuggestionsService\x12R\n\x0cSuggestBooks\x12 .suggestions.SuggestBooksRequest\x1a .suggestions.SuggestionsResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11suggestions.proto\x12\x0bsuggestions\"o\n\x0bVectorClock\x12\x32\n\x05\x63lock\x18\x01 \x03(\x0b\x32#.suggestions.VectorClock.ClockEntry\x1a,\n\nClockEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"5\n\x04\x42ook\x12\x0e\n\x06\x62ookID\x18\x01 \x01(\x05\x12\r\n\x05title\x18\x02 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x03 \x01(\t\"g\n\x13SuggestBooksRequest\x12\x10\n\x08order_id\x18\x01 \x01(\t\x12\x0e\n\x06\x62ookID\x18\x02 \x03(\x05\x12.\n\x0cvector_clock\x18\x03 \x01(\x0b\x32\x18.suggestions.VectorClock\"\x8d\x01\n\x13SuggestionsResponse\x12\r\n\x05\x65rror\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12&\n\x0bsuggestions\x18\x03 \x03(\x0b\x32\x11.suggestions.Book\x12.\n\x0cvector_clock\x18\x04 \x01(\x0b\x32\x18.suggestions.VectorClock\"]\n\x19ProcessSuggestionsRequest\x12\x10\n\x08order_id\x18\x01 \x01(\t\x12.\n\x0cvector_clock\x18\x02 \x01(\x0b\x32\x18.suggestions.VectorClock\"T\n\x10\x43learDataRequest\x12\x10\n\x08order_id\x18\x01 \x01(\t\x12.\n\x0cvector_clock\x18\x02 \x01(\x0b\x32\x18.suggestions.VectorClock\"$\n\x11\x43learDataResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x32\x9d\x02\n\x12SuggestionsService\x12[\n\x15InitializeSuggestions\x12 .suggestions.SuggestBooksRequest\x1a .suggestions.SuggestionsResponse\x12^\n\x12ProcessSuggestions\x12&.suggestions.ProcessSuggestionsRequest\x1a .suggestions.SuggestionsResponse\x12J\n\tClearData\x12\x1d.suggestions.ClearDataRequest\x1a\x1e.suggestions.ClearDataResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -27,12 +27,18 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_VECTORCLOCK']._serialized_end=145
   _globals['_VECTORCLOCK_CLOCKENTRY']._serialized_start=101
   _globals['_VECTORCLOCK_CLOCKENTRY']._serialized_end=145
-  _globals['_SUGGESTBOOKSREQUEST']._serialized_start=147
-  _globals['_SUGGESTBOOKSREQUEST']._serialized_end=232
-  _globals['_BOOKSUGGESTION']._serialized_start=234
-  _globals['_BOOKSUGGESTION']._serialized_end=297
-  _globals['_SUGGESTIONSRESPONSE']._serialized_start=299
-  _globals['_SUGGESTIONSRESPONSE']._serialized_end=418
-  _globals['_SUGGESTIONSSERVICE']._serialized_start=420
-  _globals['_SUGGESTIONSSERVICE']._serialized_end=524
+  _globals['_BOOK']._serialized_start=147
+  _globals['_BOOK']._serialized_end=200
+  _globals['_SUGGESTBOOKSREQUEST']._serialized_start=202
+  _globals['_SUGGESTBOOKSREQUEST']._serialized_end=305
+  _globals['_SUGGESTIONSRESPONSE']._serialized_start=308
+  _globals['_SUGGESTIONSRESPONSE']._serialized_end=449
+  _globals['_PROCESSSUGGESTIONSREQUEST']._serialized_start=451
+  _globals['_PROCESSSUGGESTIONSREQUEST']._serialized_end=544
+  _globals['_CLEARDATAREQUEST']._serialized_start=546
+  _globals['_CLEARDATAREQUEST']._serialized_end=630
+  _globals['_CLEARDATARESPONSE']._serialized_start=632
+  _globals['_CLEARDATARESPONSE']._serialized_end=668
+  _globals['_SUGGESTIONSSERVICE']._serialized_start=671
+  _globals['_SUGGESTIONSSERVICE']._serialized_end=956
 # @@protoc_insertion_point(module_scope)

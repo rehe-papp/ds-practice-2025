@@ -3,7 +3,9 @@ syntax = "proto3";
 package transaction_verification;
 
 service TransactionVerificationService {
-    rpc VerifyTransaction (TransactionVerificationRequest) returns (TransactionVerificationResponse);
+  rpc InitializeVerification (TransactionVerificationRequest) returns (TransactionVerificationResponse);
+  rpc ProcessVerification (ProcessVerificationRequest) returns (TransactionVerificationResponse);
+  rpc ClearData(ClearDataRequest) returns (ClearDataResponse);
 }
 
 message VectorClock {
@@ -22,7 +24,7 @@ message CreditCard {
 }
 
 message Item {
-    int64 bookid = 1;
+    int32 bookid = 1;
     int32 quantity = 2;
 }
 
@@ -34,19 +36,36 @@ message Address {
     string country = 5;
 }
 
+
 message TransactionVerificationRequest {
-    User user = 1;
-    CreditCard creditCard = 2;
-    string userComment = 3;
-    repeated Item items = 4;
-    Address billingAddress = 5;
-    string shippingMethod = 6;
-    bool termsAccepted = 7;
-    VectorClock vector_clock = 8;
+  string order_id = 1;
+  User user = 2;
+  CreditCard creditCard = 3;
+  repeated Item items = 4;
+  Address billingAddress = 5;
+  string userComment = 6;
+  string shippingMethod = 7;
+  bool termsAccepted = 8;
+  VectorClock vector_clock = 9;
 }
 
 message TransactionVerificationResponse {
-    bool is_valid = 1;
-    string message = 2;
-    VectorClock vector_clock = 3;
+  bool is_valid = 1;
+  string message = 2;
+  VectorClock vector_clock = 3;
+}
+
+message ProcessVerificationRequest {
+    string order_id = 1;
+    VectorClock vector_clock = 2;
+    bool termsAccepted = 3;
+}
+
+message ClearDataRequest {
+    string order_id = 1;
+    VectorClock vector_clock = 2;
+}
+
+message ClearDataResponse {
+    bool success = 1;
 }

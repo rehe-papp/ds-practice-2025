@@ -15,25 +15,77 @@ from concurrent import futures
 
 #imported from the utils fraud_detection
 class FraudDetectionService(fraud_detection_grpc.FraudDetectionServiceServicer):
-    def FraudDetection(self, request, context):
-        print("Starting fraud_detection")
-        total_qty = sum(item.quantity for item in request.items)  # Calculate total quantity
+    def __init__(self):
+        self.order_data = {}  # Store order data and vector clocks
+
+    def InitializeFraud(self, request, context):
+        order_id = request.order_id
+        self.order_data[order_id] = {
+            "request": request,
+            "vector_clock": dict(request.vector_clock.clock) # store vector clock as dict
+        }
+        print(f"Fraud Detection: Initialized order {order_id} with vector clock {self.order_data[order_id]['vector_clock']}")
+        return fraud_detection.FraudResponse(is_valid=True) #return a success response
+    
+    def ProcessFraud(self, request, context):
+        order_id = request.order_id
+        if order_id not in self.order_data:
+            return fraud_detection.FraudResponse(is_valid=False, message="Order not initialized.")
+
+        order_info = self.order_data[order_id]
+        stored_request = order_info["request"]
+
+        # Update vector clock
+        self.update_vector_clock(order_id, dict(request.vector_clock.clock)) #update with passed in vector clock
+        print(f"Fraud Detection: Processing order {order_id} with vector clock {self.order_data[order_id]['vector_clock']}")
+
+        total_qty = sum(item.quantity for item in stored_request.items)
 
         response = fraud_detection.FraudResponse()
-        
-        # Example fraud detection rule: flag if total quantity exceeds 100
+
         if total_qty > 100:
             response.is_valid = False
             response.message = "Transaction is fraud: Too many items ordered."
-        elif request.creditCard.number.startswith("0000"):  # Example fraud rule for invalid card numbers
+        elif stored_request.creditCard.number.startswith("0000"):
             response.is_valid = False
             response.message = "Transaction is fraud: Invalid credit card number."
         else:
             response.is_valid = True
             response.message = "Transaction is not fraud."
-        
-        print(response.message)
+
+        response.vector_clock.clock.update(self.order_data[order_id]["vector_clock"]) # send back updated vector clock
+        print(f"Fraud Detection: Processed order {order_id}. Result: {response.message}")
         return response
+    
+
+    def ClearData(self, request, context):
+        order_id = request.order_id
+        final_vc = dict(request.vector_clock.clock)
+        if order_id in self.order_data:
+            local_vc = self.order_data[order_id]["vector_clock"]
+            if self.is_vector_clock_less_than_or_equal(local_vc, final_vc):
+                del self.order_data[order_id]
+                print(f"Fraud Detection: Cleared data for order {order_id}")
+                return fraud_detection.ClearDataResponse(success=True)
+            else:
+                print(f"Fraud Detection: Vector clock mismatch for order {order_id}. Data not cleared.")
+                return fraud_detection.ClearDataResponse(success=False)
+        else:
+            return fraud_detection.ClearDataResponse(success=True) #if order id is not in the stored data, it is already cleared
+
+
+    def update_vector_clock(self, order_id, received_vc):
+        local_vc = self.order_data[order_id]["vector_clock"]
+        for key, value in received_vc.items():
+            local_vc[key] = max(local_vc.get(key, 0), value)
+        local_vc["fraud_detection"] = local_vc.get("fraud_detection", 0) + 1
+
+    def is_vector_clock_less_than_or_equal(self, local_vc, final_vc):
+        for key, value in local_vc.items():
+            if value > final_vc.get(key, 0):
+                return False
+        return True
+
 
 def serve():
     # Create a gRPC server
