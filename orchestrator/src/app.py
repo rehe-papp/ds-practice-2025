@@ -118,13 +118,23 @@ def initialize_verification(order_id, request_data, vector_clock):
         response = stub.InitializeVerification(request)
         return response
 
-def process_verification(order_id, vector_clock, terms_accepted):
+def process_verification(order_id, vector_clock, terms_accepted, items, user, credit_card):
+    print(f"Orchestrator - Credit Card Data being Sent: {credit_card}") 
+
     with grpc.insecure_channel('transaction_verification:50052') as channel:
         stub = transaction_verification_grpc.TransactionVerificationServiceStub(channel)
         request = transaction_verification.ProcessVerificationRequest(
-            order_id=order_id, 
-            vector_clock=transaction_verification.VectorClock(clock=vector_clock), 
-            termsAccepted=terms_accepted)
+            order_id=order_id,
+            vector_clock=transaction_verification.VectorClock(clock=vector_clock),
+            termsAccepted=terms_accepted,
+            items=items,
+            user=user,
+            creditCard=transaction_verification.CreditCard(
+                number=credit_card.get('number', ""),
+                expirationDate=credit_card.get('expirationDate', ""),
+                cvv=credit_card.get('cvv', "")
+            )
+        )
         response = stub.ProcessVerification(request)
         return response
 
@@ -208,7 +218,18 @@ def checkout():
 
         vector_clock["orchestrator"] += 1
 
-        verification_result = process_verification(order_id, vector_clock, request_data.get('termsAccepted', False)) #added the terms accepted parameter.
+        user_data = request_data.get('user')
+        if user_data is None:
+            return jsonify({"error": {"code": "400", "message": "Missing user information"}}), 400
+
+        verification_result = process_verification(order_id, 
+                                                   vector_clock, 
+                                                   request_data.get('termsAccepted', False), 
+                                                   request_data.get('items', []), 
+                                                   user_data,
+                                                   request_data.get('creditCard', {}))
+            
+
         if not verification_result.is_valid:
             broadcast_clear(order_id, vector_clock)
             return jsonify({"error": {"code": "400", "message": verification_result.message}}), 400
@@ -232,7 +253,6 @@ def checkout():
         traceback.print_exc()
         status_code = "500"
         error_message = error_message
-
     return jsonify({
         "error": {
             "code": "500",

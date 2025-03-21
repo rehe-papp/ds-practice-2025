@@ -33,6 +33,7 @@ class TransactionVerificationService(transaction_verification_grpc.TransactionVe
         if order_id not in self.order_data:
             return transaction_verification.TransactionVerificationResponse(is_valid=False, message="Order not initialized.")
 
+        order_info = self.order_data[order_id]
         terms_accepted = request.termsAccepted
 
         # Update vector clock
@@ -64,7 +65,7 @@ class TransactionVerificationService(transaction_verification_grpc.TransactionVe
         print(f"Transaction Verification: Processed order {order_id}. Result: {response.message}")
         return response
     
-
+    
     def ClearData(self, request, context):
         order_id = request.order_id
         final_vc = dict(request.vector_clock.clock)
@@ -80,7 +81,6 @@ class TransactionVerificationService(transaction_verification_grpc.TransactionVe
         else:
             return transaction_verification.ClearDataResponse(success=True) #if order id is not in the stored data, it is already cleared
 
-
     def update_vector_clock(self, order_id, received_vc):
         local_vc = self.order_data[order_id]["vector_clock"]
         for key, value in received_vc.items():
@@ -92,7 +92,6 @@ class TransactionVerificationService(transaction_verification_grpc.TransactionVe
             if value > final_vc.get(key, 0):
                 return False
         return True
-
 
 def serve():
     # Create a gRPC server

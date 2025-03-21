@@ -27,6 +27,8 @@ message CreditCard {
 message Item {
     int32 bookid = 1;
     int32 quantity = 2;
+    string title = 3;
+    string author = 4;
 }
 
 message Address {

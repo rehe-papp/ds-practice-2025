@@ -26,6 +26,8 @@ message CreditCard {
 message Item {
     int32 bookid = 1;
     int32 quantity = 2;
+    string title = 3;
+    string author = 4;
 }
 
 message Address {
@@ -47,6 +49,7 @@ message TransactionVerificationRequest {
   string shippingMethod = 7;
   bool termsAccepted = 8;
   VectorClock vector_clock = 9;
+  bool giftWrapping = 10;
 }
 
 message TransactionVerificationResponse {
@@ -59,6 +62,10 @@ message ProcessVerificationRequest {
     string order_id = 1;
     VectorClock vector_clock = 2;
     bool termsAccepted = 3;
+    repeated Item items = 4;
+    User user = 5;
+    CreditCard creditCard = 6;
+    Address billingAddress = 7;
 }
 
 message ClearDataRequest {
