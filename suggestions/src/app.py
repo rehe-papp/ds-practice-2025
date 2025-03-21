@@ -47,7 +47,7 @@ class SuggestionsService(suggestions_grpc.SuggestionsServiceServicer):
         # Simple suggestion logic (replace with your actual logic)
         all_suggestions = []
         for book in book_data:
-            all_suggestions.append(suggestions.BookSuggestion(bookID=book["bookID"], title=book["title"], author=book["author"]))
+            all_suggestions.append(suggestions.Book(bookID=book["bookID"], title=book["title"], author=book["author"]))
 
         response.suggestions.extend(all_suggestions)
         response.vector_clock.clock.update(self.order_data[order_id]["vector_clock"]) # send back updated vector clock
