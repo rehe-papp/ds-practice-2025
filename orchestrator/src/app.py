@@ -118,8 +118,8 @@ def initialize_verification(order_id, request_data, vector_clock):
         response = stub.InitializeVerification(request)
         return response
 
-def process_verification(order_id, vector_clock, terms_accepted, items, user, credit_card):
-    print(f"Orchestrator - Credit Card Data being Sent: {credit_card}") 
+def process_verification(order_id, vector_clock, terms_accepted, items, user, credit_card, billing_address):
+    print(f"Orchestrator - Credit Card Data being Sent: {credit_card}")
 
     with grpc.insecure_channel('transaction_verification:50052') as channel:
         stub = transaction_verification_grpc.TransactionVerificationServiceStub(channel)
@@ -133,6 +133,13 @@ def process_verification(order_id, vector_clock, terms_accepted, items, user, cr
                 number=credit_card.get('number', ""),
                 expirationDate=credit_card.get('expirationDate', ""),
                 cvv=credit_card.get('cvv', "")
+            ),
+            billingAddress = transaction_verification.Address(
+                street = billing_address.get('street', ""),
+                city = billing_address.get('city', ""),
+                state = billing_address.get('state', ""),
+                zip = billing_address.get('zip', ""),
+                country = billing_address.get('country', "")
             )
         )
         response = stub.ProcessVerification(request)
@@ -227,7 +234,8 @@ def checkout():
                                                    request_data.get('termsAccepted', False), 
                                                    request_data.get('items', []), 
                                                    user_data,
-                                                   request_data.get('creditCard', {}))
+                                                   request_data.get('creditCard', {}), 
+                                                   request_data.get('billingAddress', {}))
             
 
         if not verification_result.is_valid:

@@ -33,9 +33,6 @@ class SuggestionsService(suggestions_grpc.SuggestionsServiceServicer):
         if order_id not in self.order_data:
             return suggestions.SuggestionsResponse(error=True, message="Order not initialized.")
 
-        book_ids = request.bookID  # Access the repeated field
-        print(f"Received request for suggestions for book IDs: {book_ids}")
-
         book_data = [
             {"bookID": 4,"title": "The Example Book", "author": "John Doe"},
             {"bookID": 5, "title": "Another Book", "author": "Jane Smith"},
