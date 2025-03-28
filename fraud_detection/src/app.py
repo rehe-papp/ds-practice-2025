@@ -81,9 +81,12 @@ class FraudDetectionService(fraud_detection_grpc.FraudDetectionServiceServicer):
         local_vc["fraud_detection"] = local_vc.get("fraud_detection", 0) + 1
 
     def is_vector_clock_less_than_or_equal(self, local_vc, final_vc):
+        #print(f"is_vector_clock_less_than_or_equal - local_vc: {local_vc}, final_vc: {final_vc}")
         for key, value in local_vc.items():
-            if value > final_vc.get(key, 0):
+            if key not in final_vc or value > final_vc.get(key, 0): #changed final_vc[key] to final_vc.get(key,0)
+                #print(f"is_vector_clock_less_than_or_equal - False: key={key}, local_value={value}, final_value={final_vc.get(key)}")
                 return False
+        #print("is_vector_clock_less_than_or_equal - True")
         return True
 
 

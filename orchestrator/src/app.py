@@ -160,15 +160,30 @@ def process_suggestions(order_id, vector_clock):
         return response
 
 def broadcast_clear(order_id, final_vector_clock):
+    print(f"Orchestrator - Before clear data: {final_vector_clock}")
+
+    # Increment the orchestrator's vector clock component
+    final_vector_clock['orchestrator'] = final_vector_clock.get('orchestrator', 0) + 1
+
+    print(f"Orchestrator - After incrementing orchestrator clock: {final_vector_clock}")
+
     with grpc.insecure_channel('fraud_detection:50051') as channel:
         stub = fraud_detection_grpc.FraudDetectionServiceStub(channel)
-        stub.ClearData(fraud_detection.ClearDataRequest(order_id=order_id, vector_clock=fraud_detection.VectorClock(clock=final_vector_clock)))
+        request = fraud_detection.ClearDataRequest(order_id=order_id, vector_clock=fraud_detection.VectorClock(clock=final_vector_clock))
+        response = stub.ClearData(request)
+        print(f"Orchestrator - fraud_detection clear data sent: {final_vector_clock}")
+
     with grpc.insecure_channel('transaction_verification:50052') as channel:
         stub = transaction_verification_grpc.TransactionVerificationServiceStub(channel)
-        stub.ClearData(transaction_verification.ClearDataRequest(order_id=order_id, vector_clock=transaction_verification.VectorClock(clock=final_vector_clock)))
+        request = transaction_verification.ClearDataRequest(order_id=order_id, vector_clock=transaction_verification.VectorClock(clock=final_vector_clock))
+        response = stub.ClearData(request)
+        print(f"Orchestrator - transaction_verification clear data sent: {final_vector_clock}")
+
     with grpc.insecure_channel('suggestions:50053') as channel:
         stub = suggestions_grpc.SuggestionsServiceStub(channel)
-        stub.ClearData(suggestions.ClearDataRequest(order_id=order_id, vector_clock=suggestions.VectorClock(clock=final_vector_clock)))
+        request = suggestions.ClearDataRequest(order_id=order_id, vector_clock=suggestions.VectorClock(clock=final_vector_clock))
+        response = stub.ClearData(request)
+        print(f"Orchestrator - suggestions clear data sent: {final_vector_clock}")
 
 # Import Flask.
 # Flask is a web framework for Python.
@@ -223,6 +238,9 @@ def checkout():
             broadcast_clear(order_id, vector_clock)
             return jsonify({"error": {"code": "400", "message": fraud_result.message}}), 400
 
+        #Update the vector clock with the fraud service clock.
+        vector_clock.update(fraud_result.vector_clock.clock)
+
         vector_clock["orchestrator"] += 1
 
         user_data = request_data.get('user')
@@ -230,22 +248,27 @@ def checkout():
             return jsonify({"error": {"code": "400", "message": "Missing user information"}}), 400
 
         verification_result = process_verification(order_id, 
-                                                   vector_clock, 
-                                                   request_data.get('termsAccepted', False), 
-                                                   request_data.get('items', []), 
-                                                   user_data,
-                                                   request_data.get('creditCard', {}), 
-                                                   request_data.get('billingAddress', {}))
-            
+                                                                 vector_clock, 
+                                                                 request_data.get('termsAccepted', False), 
+                                                                 request_data.get('items', []), 
+                                                                 user_data,
+                                                                 request_data.get('creditCard', {}), 
+                                                                 request_data.get('billingAddress', {}))
 
         if not verification_result.is_valid:
             broadcast_clear(order_id, vector_clock)
             return jsonify({"error": {"code": "400", "message": verification_result.message}}), 400
 
+        #update the vector clock with the verification service clock.
+        vector_clock.update(verification_result.vector_clock.clock)
+
         vector_clock["orchestrator"] += 1
 
         suggestions_result = process_suggestions(order_id, vector_clock)
         suggested_books_list = [{'bookid': book.bookID, 'title': book.title, 'author': book.author} for book in suggestions_result.suggestions]
+
+        #update the vector clock with the suggestion service clock.
+        vector_clock.update(suggestions_result.vector_clock.clock)
 
         broadcast_clear(order_id, vector_clock)
 

@@ -67,10 +67,13 @@ class TransactionVerificationService(transaction_verification_grpc.TransactionVe
     
     
     def ClearData(self, request, context):
+        print(f"ClearData - Before update: {request.vector_clock.clock}")
         order_id = request.order_id
         final_vc = dict(request.vector_clock.clock)
+        print(f"ClearData - final_vc: {final_vc}")
         if order_id in self.order_data:
             local_vc = self.order_data[order_id]["vector_clock"]
+            print(f"ClearData - local_vc: {local_vc}")
             if self.is_vector_clock_less_than_or_equal(local_vc, final_vc):
                 del self.order_data[order_id]
                 print(f"Transaction Verification: Cleared data for order {order_id}")
@@ -88,9 +91,12 @@ class TransactionVerificationService(transaction_verification_grpc.TransactionVe
         local_vc["transaction_verification"] = local_vc.get("transaction_verification", 0) + 1
 
     def is_vector_clock_less_than_or_equal(self, local_vc, final_vc):
+        #print(f"is_vector_clock_less_than_or_equal - local_vc: {local_vc}, final_vc: {final_vc}")
         for key, value in local_vc.items():
-            if value > final_vc.get(key, 0):
+            if key not in final_vc or value > final_vc.get(key, 0): #changed final_vc[key] to final_vc.get(key,0)
+                #print(f"is_vector_clock_less_than_or_equal - False: key={key}, local_value={value}, final_value={final_vc.get(key)}")
                 return False
+        #print("is_vector_clock_less_than_or_equal - True")
         return True
 
 def serve():
