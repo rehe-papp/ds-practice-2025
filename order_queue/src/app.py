@@ -1,19 +1,60 @@
 import threading
-class OrderQueueService:
+import sys
+import os
+from collections import deque
+
+
+
+FILE = __file__ if '__file__' in globals() else os.getenv("PYTHONFILE", "")
+utils_path = os.path.abspath(os.path.join(FILE, '../../../utils/pb/order_queue'))
+sys.path.insert(0, utils_path)
+import order_queue_pb2 as order_queue
+import order_queue_pb2_grpc as order_queue_grpc
+
+
+import grpc
+from concurrent import futures
+
+
+
+class OrderQueueService(order_queue_grpc.OrderQueueServiceServicer):
     def __init__(self):
         self._lock = threading.Lock()
-        self._queue = [] # Could be replaced with a priority structure
+        self._queue = deque() # Could be replaced with a priority structure
 
     def Enqueue(self, request, context):
-        # TODO: lock queue, insert request.orderId
-        # TODO: return success response
-        pass
+        with self._lock:  # Ensure thread safety
+            print("Order queue service called")
+            self._queue.append(request.order)  # Add orderId to the queue
+            print(f"Order enqueued: {request.order}")
+            return order_queue.EnqueueResponse(success=True, message="Order enqueued successfully")
 
     def Dequeue(self, request, context):
-        # TODO: lock queue, pop an order if available
-        # TODO: return the dequeued order or an empty result
-        pass
+        print("Order queue service called")
+        with self._lock:  # Ensure thread safety
+            if self._queue:  # Check if the queue is not empty
+                order_id = self._queue.popleft()  # Remove and get the first order
+                print(f"Order dequeued: {order_id}")
+                return order_queue.DequeueResponse(success=True, orderId=order_id)
+            else:
+                return order_queue.DequeueResponse(success=False, orderId="", message="Queue is empty")
 
 def serve_queue_service():
     # TODO: create gRPC server, add OrderQueueService, start server
-    pass
+    # Create a gRPC server
+    server = grpc.server(futures.ThreadPoolExecutor())
+    # Add HelloService
+    order_queue_grpc.add_OrderQueueServiceServicer_to_server(OrderQueueService(), server)
+    # Listen on port 50054
+    port = "50054"
+    server.add_insecure_port("[::]:" + port)
+    # Start the server
+    server.start()
+    print("Server started. Listening on port 50054.")    
+    #time.sleep(5)
+    #call_all_executors()
+    # Keep thread alive
+    server.wait_for_termination()
+
+if __name__ == '__main__':
+    serve_queue_service()

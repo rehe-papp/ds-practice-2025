@@ -15,6 +15,8 @@ transaction_verification_grpc_path = os.path.abspath(os.path.join(FILE, '../../.
 sys.path.insert(0, transaction_verification_grpc_path)
 suggestions_grpc_path = os.path.abspath(os.path.join(FILE, '../../../utils/pb/suggestions'))
 sys.path.insert(0, suggestions_grpc_path)
+order_queue_grpc_path = os.path.abspath(os.path.join(FILE, '../../../utils/pb/order_queue'))
+sys.path.insert(0, order_queue_grpc_path)
 
 import fraud_detection_pb2 as fraud_detection
 import fraud_detection_pb2_grpc as fraud_detection_grpc
@@ -22,8 +24,31 @@ import transaction_verification_pb2 as transaction_verification
 import transaction_verification_pb2_grpc as transaction_verification_grpc
 import suggestions_pb2 as suggestions
 import suggestions_pb2_grpc as suggestions_grpc
+import order_queue_pb2 as order_queue
+import order_queue_pb2_grpc as order_queue_grpc
 
 import grpc
+
+
+
+def enqueue_order(order_id, order_data):
+    # Connects to order queue service and sends the data to queue
+    print(f"Enqueueing order: {order_id}")
+    try:
+        with grpc.insecure_channel('order_queue:50054') as channel:
+            stub = order_queue_grpc.OrderQueueServiceStub(channel)
+            order_message = order_queue.Order(
+                orderId=str(order_id), 
+                userName=order_data['user']['name'])
+            response = stub.Enqueue(order_queue.EnqueueRequest(order=order_message))
+            print(f"Order enqueued: {response}")
+            
+    except Exception as e:
+        print(f"ERROR: Exception in enqueue_order: {e}")
+        return {"error": {"code": "500","message": "Internal Server Error"}}, 500
+
+    return response
+
     
 def initialize_fraud(order_id, request_data, vector_clock):
     with grpc.insecure_channel('fraud_detection:50051') as channel:
@@ -255,7 +280,12 @@ def checkout():
                                                                  request_data.get('creditCard', {}), 
                                                                  request_data.get('billingAddress', {}))
 
-        if not verification_result.is_valid:
+
+        if verification_result.is_valid:
+            queue_response = enqueue_order(order_id, request_data)#placeholder
+            print(f"-------{queue_response}------------")
+
+        else:
             broadcast_clear(order_id, vector_clock)
             return jsonify({"error": {"code": "400", "message": verification_result.message}}), 400
 
