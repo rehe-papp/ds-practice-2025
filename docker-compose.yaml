@@ -123,7 +123,7 @@ services:
       - ./utils:/app/utils
       # Mount the order_queue/src directory in the current directory to the /app/order_queue/src directory in the container
       - ./order_queue/src:/app/order_queue/src
-  executor:
+  executor1:
     build:
       # Use the current directory as the build context
       # This allows us to access the files in the current directory inside the Dockerfile
@@ -135,6 +135,56 @@ services:
       - 50055:50055
     environment:
       # Pass the environment variables to the container
+      - EXECUTOR_ID=1
+      - PORT=50055
+      # The PYTHONUNBUFFERED environment variable ensures that the output from the application is logged to the console
+      - PYTHONUNBUFFERED=TRUE
+      # The PYTHONFILE environment variable specifies the absolute entry point of the application
+      # Check app.py in the executor directory to see how this is used
+      - PYTHONFILE=/app/executor/src/app.py
+    volumes:
+      # Mount the utils directory in the current directory to the /app/utils directory in the container
+      - ./utils:/app/utils
+      # Mount the executor/src directory in the current directory to the /app/executor/src directory in the container
+      - ./executor/src:/app/executor/src
+  executor2:
+    build:
+      # Use the current directory as the build context
+      # This allows us to access the files in the current directory inside the Dockerfile
+      context: ./
+      # Use the Dockerfile in the executor directorys
+      dockerfile: ./executor/Dockerfile
+    ports:
+      # Expose port 50056 on the host, and map port 50056 of the container to port 50056 on the host
+      - 50056:50056
+    environment:
+      # Pass the environment variables to the container
+      - EXECUTOR_ID=2
+      - PORT=50056
+      # The PYTHONUNBUFFERED environment variable ensures that the output from the application is logged to the console
+      - PYTHONUNBUFFERED=TRUE
+      # The PYTHONFILE environment variable specifies the absolute entry point of the application
+      # Check app.py in the executor directory to see how this is used
+      - PYTHONFILE=/app/executor/src/app.py
+    volumes:
+      # Mount the utils directory in the current directory to the /app/utils directory in the container
+      - ./utils:/app/utils
+      # Mount the executor/src directory in the current directory to the /app/executor/src directory in the container
+      - ./executor/src:/app/executor/src
+  executor3:
+    build:
+      # Use the current directory as the build context
+      # This allows us to access the files in the current directory inside the Dockerfile
+      context: ./
+      # Use the Dockerfile in the executor directorys
+      dockerfile: ./executor/Dockerfile
+    ports:
+      # Expose port 50057 on the host, and map port 50057 of the container to port 50057 on the host
+      - 50057:50057
+    environment:
+      # Pass the environment variables to the container
+      - EXECUTOR_ID=3
+      - PORT=50057
       # The PYTHONUNBUFFERED environment variable ensures that the output from the application is logged to the console
       - PYTHONUNBUFFERED=TRUE
       # The PYTHONFILE environment variable specifies the absolute entry point of the application

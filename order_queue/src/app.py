@@ -33,11 +33,11 @@ class OrderQueueService(order_queue_grpc.OrderQueueServiceServicer):
         print("Order queue service called")
         with self._lock:  # Ensure thread safety
             if self._queue:  # Check if the queue is not empty
-                order_id = self._queue.popleft()  # Remove and get the first order
-                print(f"Order dequeued: {order_id}")
-                return order_queue.DequeueResponse(success=True, orderId=order_id)
+                order = self._queue.popleft()  # Remove and get the first order
+                print(f"Order dequeued: {order}")
+                return order_queue.DequeueResponse(success=True, order=order)
             else:
-                return order_queue.DequeueResponse(success=False, orderId="", message="Queue is empty")
+                return order_queue.DequeueResponse(success=False, order="")
 
 def serve_queue_service():
     # TODO: create gRPC server, add OrderQueueService, start server

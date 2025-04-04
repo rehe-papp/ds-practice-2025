@@ -2,6 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
+import executor_pb2 as executor__pb2
 
 
 class ExecutorServiceStub(object):
@@ -13,14 +14,65 @@ class ExecutorServiceStub(object):
         Args:
             channel: A grpc.Channel.
         """
+        self.SendHeartbeat = channel.unary_unary(
+                '/executor.ExecutorService/SendHeartbeat',
+                request_serializer=executor__pb2.HeartbeatRequest.SerializeToString,
+                response_deserializer=executor__pb2.HeartbeatResponse.FromString,
+                )
+        self.StartElection = channel.unary_unary(
+                '/executor.ExecutorService/StartElection',
+                request_serializer=executor__pb2.ElectionRequest.SerializeToString,
+                response_deserializer=executor__pb2.ElectionResponse.FromString,
+                )
+        self.AnnounceLeader = channel.unary_unary(
+                '/executor.ExecutorService/AnnounceLeader',
+                request_serializer=executor__pb2.CoordinatorMessage.SerializeToString,
+                response_deserializer=executor__pb2.Empty.FromString,
+                )
 
 
 class ExecutorServiceServicer(object):
     """Missing associated documentation comment in .proto file."""
 
+    def SendHeartbeat(self, request, context):
+        """Heartbeat message for leader liveness
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def StartElection(self, request, context):
+        """Election message to start election
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AnnounceLeader(self, request, context):
+        """Notification that a new leader is chosen
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_ExecutorServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
+            'SendHeartbeat': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendHeartbeat,
+                    request_deserializer=executor__pb2.HeartbeatRequest.FromString,
+                    response_serializer=executor__pb2.HeartbeatResponse.SerializeToString,
+            ),
+            'StartElection': grpc.unary_unary_rpc_method_handler(
+                    servicer.StartElection,
+                    request_deserializer=executor__pb2.ElectionRequest.FromString,
+                    response_serializer=executor__pb2.ElectionResponse.SerializeToString,
+            ),
+            'AnnounceLeader': grpc.unary_unary_rpc_method_handler(
+                    servicer.AnnounceLeader,
+                    request_deserializer=executor__pb2.CoordinatorMessage.FromString,
+                    response_serializer=executor__pb2.Empty.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'executor.ExecutorService', rpc_method_handlers)
@@ -30,3 +82,54 @@ def add_ExecutorServiceServicer_to_server(servicer, server):
  # This class is part of an EXPERIMENTAL API.
 class ExecutorService(object):
     """Missing associated documentation comment in .proto file."""
+
+    @staticmethod
+    def SendHeartbeat(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/executor.ExecutorService/SendHeartbeat',
+            executor__pb2.HeartbeatRequest.SerializeToString,
+            executor__pb2.HeartbeatResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def StartElection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/executor.ExecutorService/StartElection',
+            executor__pb2.ElectionRequest.SerializeToString,
+            executor__pb2.ElectionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AnnounceLeader(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/executor.ExecutorService/AnnounceLeader',
+            executor__pb2.CoordinatorMessage.SerializeToString,
+            executor__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
