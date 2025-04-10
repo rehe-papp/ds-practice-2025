@@ -8,9 +8,9 @@ class Order(_message.Message):
     __slots__ = ("orderId", "userName")
     ORDERID_FIELD_NUMBER: _ClassVar[int]
     USERNAME_FIELD_NUMBER: _ClassVar[int]
-    orderId: str
+    orderId: int
     userName: str
-    def __init__(self, orderId: _Optional[str] = ..., userName: _Optional[str] = ...) -> None: ...
+    def __init__(self, orderId: _Optional[int] = ..., userName: _Optional[str] = ...) -> None: ...
 
 class EnqueueRequest(_message.Message):
     __slots__ = ("order",)
@@ -29,8 +29,8 @@ class EnqueueResponse(_message.Message):
 class DequeueRequest(_message.Message):
     __slots__ = ("executor_id",)
     EXECUTOR_ID_FIELD_NUMBER: _ClassVar[int]
-    executor_id: str
-    def __init__(self, executor_id: _Optional[str] = ...) -> None: ...
+    executor_id: int
+    def __init__(self, executor_id: _Optional[int] = ...) -> None: ...
 
 class DequeueResponse(_message.Message):
     __slots__ = ("success", "order")

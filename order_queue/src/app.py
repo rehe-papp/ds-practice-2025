@@ -30,14 +30,15 @@ class OrderQueueService(order_queue_grpc.OrderQueueServiceServicer):
             return order_queue.EnqueueResponse(success=True, message="Order enqueued successfully")
 
     def Dequeue(self, request, context):
-        print("Order queue service called")
+        print(f"Order queue service called by executor {request.executor_id}")
         with self._lock:  # Ensure thread safety
             if self._queue:  # Check if the queue is not empty
                 order = self._queue.popleft()  # Remove and get the first order
                 print(f"Order dequeued: {order}")
                 return order_queue.DequeueResponse(success=True, order=order)
             else:
-                return order_queue.DequeueResponse(success=False, order="")
+                empty_order = order_queue.Order(orderId=0, userName="")
+                return order_queue.DequeueResponse(success=False, order=empty_order)
 
 def serve_queue_service():
     # TODO: create gRPC server, add OrderQueueService, start server

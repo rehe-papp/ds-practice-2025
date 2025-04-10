@@ -91,7 +91,11 @@ class ExecutorService(executor_grpc.ExecutorServiceServicer):
             while self.running:
                 if self.leader_id == self.executor_id:
                     # Simulate order dequeue + execution
-                    print(f"[{self.executor_id}] I'm the leader. Executing order...")
+                    response = self.queue_stub.Dequeue(order_queue.DequeueRequest(executor_id=self.executor_id))
+                    if response.success:
+                        print(f"[{self.executor_id}] I'm the leader. Executing order with id {response.order.orderId}")
+                    else:
+                        print(f"[{self.executor_id}] I'm the leader. No orders in queue. On standby")
                     time.sleep(3)
                 else:
                     # Optional: check heartbeat from leader

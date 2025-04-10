@@ -3,7 +3,7 @@ import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import uuid
 import json
-import traceback
+import random
 
 # This set of lines are needed to import the gRPC stubs.
 # The path of the stubs is relative to the current file, or absolute inside the container.
@@ -38,7 +38,7 @@ def enqueue_order(order_id, order_data):
         with grpc.insecure_channel('order_queue:50054') as channel:
             stub = order_queue_grpc.OrderQueueServiceStub(channel)
             order_message = order_queue.Order(
-                orderId=str(order_id), 
+                orderId=order_id,
                 userName=order_data['user']['name'])
             response = stub.Enqueue(order_queue.EnqueueRequest(order=order_message))
             print(f"Order enqueued: {response}")
@@ -238,7 +238,7 @@ def index():
 
 def checkout():
     request_data = json.loads(request.data)
-    order_id = str(uuid.uuid4())
+    order_id = str(random.randint(0, 2**32-1))
     book_ids = [int(item.get('bookid')) for item in request_data.get('items', []) if item.get('bookid') is not None]
     vector_clock = {"orchestrator": 1}
 
@@ -282,7 +282,7 @@ def checkout():
 
 
         if verification_result.is_valid:
-            queue_response = enqueue_order(order_id, request_data)#placeholder
+            queue_response = enqueue_order(int(order_id), request_data)#placeholder
             print(f"-------{queue_response}------------")
 
         else:
