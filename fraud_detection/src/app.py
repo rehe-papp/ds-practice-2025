@@ -35,8 +35,8 @@ class FraudDetectionService(fraud_detection_grpc.FraudDetectionServiceServicer):
         order_info = self.order_data[order_id]
         stored_request = order_info["request"]
 
-        # Update vector clock
-        self.update_vector_clock(order_id, dict(request.vector_clock.clock)) #update with passed in vector clock
+        # Update vector clock with received clock
+        self.update_vector_clock(order_id, dict(request.vector_clock.clock))
         print(f"Fraud Detection: Processing order {order_id} with vector clock {self.order_data[order_id]['vector_clock']}")
 
         total_qty = sum(item.quantity for item in stored_request.items)
@@ -53,19 +53,24 @@ class FraudDetectionService(fraud_detection_grpc.FraudDetectionServiceServicer):
             response.is_valid = True
             response.message = "Transaction is not fraud."
 
-        response.vector_clock.clock.update(self.order_data[order_id]["vector_clock"]) # send back updated vector clock
+        # Increment fraud_detection's own clock before returning
+        self.order_data[order_id]["vector_clock"]["fraud_detection"] = self.order_data[order_id]["vector_clock"].get("fraud_detection", 0) + 1
+
+        # Send back updated vector clock
+        response.vector_clock.clock.update(self.order_data[order_id]["vector_clock"])
         print(f"Fraud Detection: Processed order {order_id}. Result: {response.message}")
         return response
-    
 
     def ClearData(self, request, context):
         order_id = request.order_id
         final_vc = dict(request.vector_clock.clock)
+
         if order_id in self.order_data:
             local_vc = self.order_data[order_id]["vector_clock"]
             if self.is_vector_clock_less_than_or_equal(local_vc, final_vc):
-                del self.order_data[order_id]
+                del self.order_data[order_id]  # Delete data FIRST
                 print(f"Fraud Detection: Cleared data for order {order_id}")
+                local_vc["fraud_detection"] = local_vc.get("fraud_detection", 0) + 1 #increment local clock
                 return fraud_detection.ClearDataResponse(success=True)
             else:
                 print(f"Fraud Detection: Vector clock mismatch for order {order_id}. Data not cleared.")
