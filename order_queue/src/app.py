@@ -41,7 +41,6 @@ class OrderQueueService(order_queue_grpc.OrderQueueServiceServicer):
                 return order_queue.DequeueResponse(success=False, order=empty_order)
 
 def serve_queue_service():
-    # TODO: create gRPC server, add OrderQueueService, start server
     # Create a gRPC server
     server = grpc.server(futures.ThreadPoolExecutor())
     # Add HelloService

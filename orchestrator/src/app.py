@@ -281,9 +281,8 @@ def checkout():
 
 
         if verification_result.is_valid:
-            queue_response = enqueue_order(int(order_id), request_data)#placeholder
-            print(f"-------{queue_response}------------")
-
+            queue_response = enqueue_order(int(order_id), request_data)
+            print(f"{queue_response.message}")
         else:
             broadcast_clear(order_id, vector_clock)
             return jsonify({"error": {"code": "400", "message": verification_result.message}}), 400
