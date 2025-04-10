@@ -245,63 +245,47 @@ def checkout():
     try:
         with ThreadPoolExecutor(max_workers=3) as executor:
             futures = {
-                executor.submit(initialize_fraud, order_id, request_data, vector_clock): "fraud",
-                executor.submit(initialize_verification, order_id, request_data, vector_clock): "verification",
-                executor.submit(initialize_suggestions, order_id, book_ids, vector_clock): "suggestions",
+                executor.submit(initialize_fraud, order_id, request_data, vector_clock.copy()): "fraud",
+                executor.submit(initialize_verification, order_id, request_data, vector_clock.copy()): "verification",
+                executor.submit(initialize_suggestions, order_id, book_ids, vector_clock.copy()): "suggestions",
             }
-
             for future in as_completed(futures):
                 result = future.result()
                 if result and hasattr(result, 'error') and result.error:
-                    broadcast_clear(order_id, vector_clock)
+                    broadcast_clear(order_id, vector_clock.copy())
                     return jsonify({"error": {"code": "500", "message": result.message}}), 500
 
         vector_clock["orchestrator"] += 1
+        print(f"Orchestrator: After initialization, vector_clock: {vector_clock}")
 
-        fraud_result = process_fraud(order_id, vector_clock)
-        if not fraud_result.is_valid:
-            broadcast_clear(order_id, vector_clock)
-            return jsonify({"error": {"code": "400", "message": fraud_result.message}}), 400
-
-        #Update the vector clock with the fraud service clock.
+        fraud_result = process_fraud(order_id, vector_clock.copy())
+        print(f"Orchestrator: Before fraud update, vector_clock: {vector_clock}")
         vector_clock.update(fraud_result.vector_clock.clock)
+        print(f"Orchestrator: After fraud update, vector_clock: {vector_clock}")
 
         vector_clock["orchestrator"] += 1
+        print(f"Orchestrator: After fraud processing, vector_clock: {vector_clock}")
 
         user_data = request_data.get('user')
         if user_data is None:
+            broadcast_clear(order_id, vector_clock.copy())
             return jsonify({"error": {"code": "400", "message": "Missing user information"}}), 400
 
-        verification_result = process_verification(order_id, 
-                                                                 vector_clock, 
-                                                                 request_data.get('termsAccepted', False), 
-                                                                 request_data.get('items', []), 
-                                                                 user_data,
-                                                                 request_data.get('creditCard', {}), 
-                                                                 request_data.get('billingAddress', {}))
-
-
-        if verification_result.is_valid:
-            queue_response = enqueue_order(order_id, request_data)#placeholder
-            print(f"-------{queue_response}------------")
-
-        else:
-            broadcast_clear(order_id, vector_clock)
+        verification_result = process_verification(order_id, vector_clock.copy(), request_data.get('termsAccepted', False), request_data.get('items', []), user_data, request_data.get('creditCard', {}), request_data.get('billingAddress', {}))
+        if not verification_result.is_valid:
+            broadcast_clear(order_id, vector_clock.copy())
             return jsonify({"error": {"code": "400", "message": verification_result.message}}), 400
 
-        #update the vector clock with the verification service clock.
         vector_clock.update(verification_result.vector_clock.clock)
-
         vector_clock["orchestrator"] += 1
+        print(f"Orchestrator: After verification processing, vector_clock: {vector_clock}")
 
-        suggestions_result = process_suggestions(order_id, vector_clock)
-        suggested_books_list = [{'bookid': book.bookID, 'title': book.title, 'author': book.author} for book in suggestions_result.suggestions]
-
-        #update the vector clock with the suggestion service clock.
+        suggestions_result = process_suggestions(order_id, vector_clock.copy())
         vector_clock.update(suggestions_result.vector_clock.clock)
+        print(f"Orchestrator: After suggestions processing, vector_clock: {vector_clock}")
 
-        broadcast_clear(order_id, vector_clock)
-
+        broadcast_clear(order_id, vector_clock.copy())
+        suggested_books_list = [{'bookid': book.bookID, 'title': book.title, 'author': book.author} for book in suggestions_result.suggestions]
         return jsonify({'orderId': order_id, 'status': 'Order Approved', 'suggestedBooks': suggested_books_list})
 
     except grpc.RpcError as e:
@@ -313,14 +297,8 @@ def checkout():
         print(f"Unexpected error: {error_message}")
         traceback.print_exc()
         status_code = "500"
-        error_message = error_message
-    return jsonify({
-        "error": {
-            "code": "500",
-            "message": "Internal Server Error",
-            "details": f"gRPC status: {status_code}, details: {error_message}",
-        }
-    }), 500
+    return jsonify({"error": {"code": "500", "message": "Internal Server Error", "details": f"gRPC status: {status_code}, details: {error_message}"}}), 500
+
 
 
 if __name__ == '__main__':
