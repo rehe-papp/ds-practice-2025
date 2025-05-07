@@ -5,6 +5,12 @@ package database;
 service DatabaseService {
     rpc Read (ReadRequest) returns (ReadResponse);
     rpc Write (WriteRequest) returns (WriteResponse);
+    // Heartbeat message for leader liveness
+    rpc SendHeartbeat(HeartbeatRequest) returns (HeartbeatResponse);
+    // Election message to start election
+    rpc StartElection(ElectionRequest) returns (ElectionResponse);
+    // Notification that a new leader is chosen
+    rpc AnnounceLeader(CoordinatorMessage) returns (Empty);
 }
 
 message ReadRequest {
@@ -23,3 +29,25 @@ message WriteRequest {
 message WriteResponse {
     bool success = 1;
 }
+
+message HeartbeatRequest {
+int32 from_database_id = 1;
+}
+
+message HeartbeatResponse {
+bool alive = 1;
+}
+
+message ElectionRequest {
+int32 from_database_id = 1;
+}
+
+message ElectionResponse {
+bool acknowledged = 1;
+}
+
+message CoordinatorMessage {
+int32 new_leader_id = 1;
+}
+
+message Empty {}

@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x64\x61tabase.proto\x12\x08\x64\x61tabase\"\x1c\n\x0bReadRequest\x12\r\n\x05title\x18\x01 \x01(\t\"\x1d\n\x0cReadResponse\x12\r\n\x05stock\x18\x01 \x01(\x05\"0\n\x0cWriteRequest\x12\r\n\x05title\x18\x01 \x01(\t\x12\x11\n\tnew_stock\x18\x02 \x01(\x05\" \n\rWriteResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x32\x82\x01\n\x0f\x44\x61tabaseService\x12\x35\n\x04Read\x12\x15.database.ReadRequest\x1a\x16.database.ReadResponse\x12\x38\n\x05Write\x12\x16.database.WriteRequest\x1a\x17.database.WriteResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x64\x61tabase.proto\x12\x08\x64\x61tabase\"\x1c\n\x0bReadRequest\x12\r\n\x05title\x18\x01 \x01(\t\"\x1d\n\x0cReadResponse\x12\r\n\x05stock\x18\x01 \x01(\x05\"0\n\x0cWriteRequest\x12\r\n\x05title\x18\x01 \x01(\t\x12\x11\n\tnew_stock\x18\x02 \x01(\x05\" \n\rWriteResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\",\n\x10HeartbeatRequest\x12\x18\n\x10\x66rom_database_id\x18\x01 \x01(\x05\"\"\n\x11HeartbeatResponse\x12\r\n\x05\x61live\x18\x01 \x01(\x08\"+\n\x0f\x45lectionRequest\x12\x18\n\x10\x66rom_database_id\x18\x01 \x01(\x05\"(\n\x10\x45lectionResponse\x12\x14\n\x0c\x61\x63knowledged\x18\x01 \x01(\x08\"+\n\x12\x43oordinatorMessage\x12\x15\n\rnew_leader_id\x18\x01 \x01(\x05\"\x07\n\x05\x45mpty2\xd5\x02\n\x0f\x44\x61tabaseService\x12\x35\n\x04Read\x12\x15.database.ReadRequest\x1a\x16.database.ReadResponse\x12\x38\n\x05Write\x12\x16.database.WriteRequest\x1a\x17.database.WriteResponse\x12H\n\rSendHeartbeat\x12\x1a.database.HeartbeatRequest\x1a\x1b.database.HeartbeatResponse\x12\x46\n\rStartElection\x12\x19.database.ElectionRequest\x1a\x1a.database.ElectionResponse\x12?\n\x0e\x41nnounceLeader\x12\x1c.database.CoordinatorMessage\x1a\x0f.database.Emptyb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -29,6 +29,18 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_WRITEREQUEST']._serialized_end=137
   _globals['_WRITERESPONSE']._serialized_start=139
   _globals['_WRITERESPONSE']._serialized_end=171
-  _globals['_DATABASESERVICE']._serialized_start=174
-  _globals['_DATABASESERVICE']._serialized_end=304
+  _globals['_HEARTBEATREQUEST']._serialized_start=173
+  _globals['_HEARTBEATREQUEST']._serialized_end=217
+  _globals['_HEARTBEATRESPONSE']._serialized_start=219
+  _globals['_HEARTBEATRESPONSE']._serialized_end=253
+  _globals['_ELECTIONREQUEST']._serialized_start=255
+  _globals['_ELECTIONREQUEST']._serialized_end=298
+  _globals['_ELECTIONRESPONSE']._serialized_start=300
+  _globals['_ELECTIONRESPONSE']._serialized_end=340
+  _globals['_COORDINATORMESSAGE']._serialized_start=342
+  _globals['_COORDINATORMESSAGE']._serialized_end=385
+  _globals['_EMPTY']._serialized_start=387
+  _globals['_EMPTY']._serialized_end=394
+  _globals['_DATABASESERVICE']._serialized_start=397
+  _globals['_DATABASESERVICE']._serialized_end=738
 # @@protoc_insertion_point(module_scope)

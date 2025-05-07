@@ -24,6 +24,21 @@ class DatabaseServiceStub(object):
                 request_serializer=database__pb2.WriteRequest.SerializeToString,
                 response_deserializer=database__pb2.WriteResponse.FromString,
                 )
+        self.SendHeartbeat = channel.unary_unary(
+                '/database.DatabaseService/SendHeartbeat',
+                request_serializer=database__pb2.HeartbeatRequest.SerializeToString,
+                response_deserializer=database__pb2.HeartbeatResponse.FromString,
+                )
+        self.StartElection = channel.unary_unary(
+                '/database.DatabaseService/StartElection',
+                request_serializer=database__pb2.ElectionRequest.SerializeToString,
+                response_deserializer=database__pb2.ElectionResponse.FromString,
+                )
+        self.AnnounceLeader = channel.unary_unary(
+                '/database.DatabaseService/AnnounceLeader',
+                request_serializer=database__pb2.CoordinatorMessage.SerializeToString,
+                response_deserializer=database__pb2.Empty.FromString,
+                )
 
 
 class DatabaseServiceServicer(object):
@@ -41,6 +56,27 @@ class DatabaseServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def SendHeartbeat(self, request, context):
+        """Heartbeat message for leader liveness
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def StartElection(self, request, context):
+        """Election message to start election
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AnnounceLeader(self, request, context):
+        """Notification that a new leader is chosen
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DatabaseServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -53,6 +89,21 @@ def add_DatabaseServiceServicer_to_server(servicer, server):
                     servicer.Write,
                     request_deserializer=database__pb2.WriteRequest.FromString,
                     response_serializer=database__pb2.WriteResponse.SerializeToString,
+            ),
+            'SendHeartbeat': grpc.unary_unary_rpc_method_handler(
+                    servicer.SendHeartbeat,
+                    request_deserializer=database__pb2.HeartbeatRequest.FromString,
+                    response_serializer=database__pb2.HeartbeatResponse.SerializeToString,
+            ),
+            'StartElection': grpc.unary_unary_rpc_method_handler(
+                    servicer.StartElection,
+                    request_deserializer=database__pb2.ElectionRequest.FromString,
+                    response_serializer=database__pb2.ElectionResponse.SerializeToString,
+            ),
+            'AnnounceLeader': grpc.unary_unary_rpc_method_handler(
+                    servicer.AnnounceLeader,
+                    request_deserializer=database__pb2.CoordinatorMessage.FromString,
+                    response_serializer=database__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -95,5 +146,56 @@ class DatabaseService(object):
         return grpc.experimental.unary_unary(request, target, '/database.DatabaseService/Write',
             database__pb2.WriteRequest.SerializeToString,
             database__pb2.WriteResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SendHeartbeat(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/database.DatabaseService/SendHeartbeat',
+            database__pb2.HeartbeatRequest.SerializeToString,
+            database__pb2.HeartbeatResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def StartElection(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/database.DatabaseService/StartElection',
+            database__pb2.ElectionRequest.SerializeToString,
+            database__pb2.ElectionResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AnnounceLeader(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/database.DatabaseService/AnnounceLeader',
+            database__pb2.CoordinatorMessage.SerializeToString,
+            database__pb2.Empty.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
