@@ -7,9 +7,16 @@ service OrderQueueService {
     rpc Dequeue (DequeueRequest) returns (DequeueResponse);
 }
 
+message BookItem {
+    string title = 1;
+    int32 quantity = 2;
+}
+
+
 message Order {
     int32 orderId = 1;
     string userName = 2;
+    repeated BookItem items = 3;
 }
 
 message EnqueueRequest {

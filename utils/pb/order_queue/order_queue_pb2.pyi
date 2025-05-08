@@ -1,16 +1,27 @@
+from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Mapping as _Mapping, Optional as _Optional, Union as _Union
+from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
+class BookItem(_message.Message):
+    __slots__ = ("title", "quantity")
+    TITLE_FIELD_NUMBER: _ClassVar[int]
+    QUANTITY_FIELD_NUMBER: _ClassVar[int]
+    title: str
+    quantity: int
+    def __init__(self, title: _Optional[str] = ..., quantity: _Optional[int] = ...) -> None: ...
+
 class Order(_message.Message):
-    __slots__ = ("orderId", "userName")
+    __slots__ = ("orderId", "userName", "items")
     ORDERID_FIELD_NUMBER: _ClassVar[int]
     USERNAME_FIELD_NUMBER: _ClassVar[int]
+    ITEMS_FIELD_NUMBER: _ClassVar[int]
     orderId: int
     userName: str
-    def __init__(self, orderId: _Optional[int] = ..., userName: _Optional[str] = ...) -> None: ...
+    items: _containers.RepeatedCompositeFieldContainer[BookItem]
+    def __init__(self, orderId: _Optional[int] = ..., userName: _Optional[str] = ..., items: _Optional[_Iterable[_Union[BookItem, _Mapping]]] = ...) -> None: ...
 
 class EnqueueRequest(_message.Message):
     __slots__ = ("order",)

@@ -11,18 +11,22 @@ class ReadRequest(_message.Message):
     def __init__(self, title: _Optional[str] = ...) -> None: ...
 
 class ReadResponse(_message.Message):
-    __slots__ = ("stock",)
+    __slots__ = ("stock", "timestamp")
     STOCK_FIELD_NUMBER: _ClassVar[int]
+    TIMESTAMP_FIELD_NUMBER: _ClassVar[int]
     stock: int
-    def __init__(self, stock: _Optional[int] = ...) -> None: ...
+    timestamp: int
+    def __init__(self, stock: _Optional[int] = ..., timestamp: _Optional[int] = ...) -> None: ...
 
 class WriteRequest(_message.Message):
-    __slots__ = ("title", "new_stock")
+    __slots__ = ("title", "new_stock", "timestamp")
     TITLE_FIELD_NUMBER: _ClassVar[int]
     NEW_STOCK_FIELD_NUMBER: _ClassVar[int]
+    TIMESTAMP_FIELD_NUMBER: _ClassVar[int]
     title: str
     new_stock: int
-    def __init__(self, title: _Optional[str] = ..., new_stock: _Optional[int] = ...) -> None: ...
+    timestamp: int
+    def __init__(self, title: _Optional[str] = ..., new_stock: _Optional[int] = ..., timestamp: _Optional[int] = ...) -> None: ...
 
 class WriteResponse(_message.Message):
     __slots__ = ("success",)

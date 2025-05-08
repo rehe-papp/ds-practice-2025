@@ -17,6 +17,13 @@ import order_queue_pb2 as order_queue
 import order_queue_pb2_grpc as order_queue_grpc
 
 
+FILE = __file__ if '__file__' in globals() else os.getenv("PYTHONFILE", "")
+utils_path_3 = os.path.abspath(os.path.join(FILE, '../../../utils/pb/database'))
+sys.path.insert(0, utils_path_3)
+import database_pb2 as database
+import database_pb2_grpc as database_grpc
+
+
 import grpc
 from concurrent import futures
 
@@ -28,6 +35,21 @@ class ExecutorService(executor_grpc.ExecutorServiceServicer):
         self.queue_stub = queue_stub
         self.leader_id = None
         self.running = True
+
+
+        db_addresses = {
+            1: "database1:50058",
+            2: "database2:50059",
+            3: "database3:50060",
+        }
+        self.database_stubs = {
+            db_id: database_grpc.DatabaseServiceStub(grpc.insecure_channel(addr))
+            for db_id, addr in db_addresses.items()
+        }
+
+        num_replicas = len(self.database_stubs)
+        self.read_quorum = (num_replicas // 2) + 1  # majority for reads
+        self.write_quorum = (num_replicas // 2) + 1  # majority for writes
 
     def SendHeartbeat(self, request, context):
         return executor.HeartbeatResponse(alive=True)
@@ -93,7 +115,75 @@ class ExecutorService(executor_grpc.ExecutorServiceServicer):
                     # Simulate order dequeue + execution
                     response = self.queue_stub.Dequeue(order_queue.DequeueRequest(executor_id=self.executor_id))
                     if response.success:
-                        print(f"[{self.executor_id}] I'm the leader. Executing order with id {response.order.orderId}")
+                        order = response.order
+                        print(f"[{self.executor_id}] Executing order {order.orderId}")
+
+                        read_responses = {}
+                        for item in order.items:
+                            title = item.title
+                            quantity = item.quantity
+
+                            # Step 1: Quorum-based read from replicas
+                            item_responses = []
+                            for db_id, stub in self.database_stubs.items():
+                                try:
+                                    print("trying to read", title)
+                                    resp = stub.Read(database.ReadRequest(title=title))
+                                    item_responses.append((resp.stock, resp.timestamp))
+                                except grpc.RpcError:
+                                    continue
+                                if len(item_responses) >= self.read_quorum:
+                                    break
+
+                            if len(item_responses) < self.read_quorum:
+                                print(f"[{self.executor_id}] Read quorum not reached for book '{title}'. Skipping order.")
+                                continue
+
+                            # Sort by timestamp, most recent first
+                            item_responses.sort(key=lambda x: x[1], reverse=True)
+                            latest_stock, latest_ts = item_responses[0]
+                            read_responses[title] = (latest_stock, quantity)
+
+                        all_valid = True
+                        for title, (stock, quantity) in read_responses.items():
+                            if stock < quantity:
+                                print(f"[{self.executor_id}] Not enough stock to fulfill order for '{title}'")
+                                all_valid = False
+                                break
+
+
+                            
+                        if not all_valid:
+                            continue  # Skip this order if any book doesn't have enough stock
+                        
+                        # Step 3: Write to replicas, require quorum
+                        
+                        for item in order.items:
+                            title = item.title
+                            quantity = item.quantity
+                            new_stock = read_responses[title][0] - quantity
+                            new_timestamp = int(time.time())
+                            ack_count = 0
+
+                            for db_id, stub in self.database_stubs.items():
+                                try:
+                                    write_resp = stub.Write(database.WriteRequest(
+                                        title=title,
+                                        new_stock=new_stock,
+                                        timestamp=new_timestamp
+                                    ))
+                                    if write_resp.success:
+                                        ack_count += 1
+                                except grpc.RpcError as e:
+                                    print(f"[{self.executor_id}] Write failed on DB {db_id}: {e}")
+                                if ack_count >= self.write_quorum:
+                                    print("Write quorum achieved")
+                                    break
+
+                        if ack_count >= self.write_quorum:
+                            print(f"[{self.executor_id}] Order {order.orderId} succeeded.")
+                        else:
+                            print(f"[{self.executor_id}] Order {order.orderId} failed. Only {ack_count} replicas acknowledged")
                     else:
                         print(f"[{self.executor_id}] I'm the leader. No orders in queue. On standby")
                     time.sleep(3)
@@ -119,7 +209,7 @@ class ExecutorService(executor_grpc.ExecutorServiceServicer):
 def launch_executor(executor_id, known_ids, port):
     queue_channel = grpc.insecure_channel('order_queue:50054')
     queue_stub = order_queue_grpc.OrderQueueServiceStub(queue_channel)
-
+    time.sleep(5)
 
     svc = ExecutorService(executor_id, known_ids, queue_stub)
     grpc_server = svc.start_grpc_server(port)

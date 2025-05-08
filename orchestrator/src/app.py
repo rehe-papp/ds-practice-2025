@@ -37,16 +37,24 @@ def enqueue_order(order_id, order_data):
     try:
         with grpc.insecure_channel('order_queue:50054') as channel:
             stub = order_queue_grpc.OrderQueueServiceStub(channel)
+
+            # Create list of BookItem messages
+            items = [
+                order_queue.BookItem(title=item["title"], quantity=item["quantity"])
+                for item in order_data["items"]
+            ]
+
             order_message = order_queue.Order(
                 orderId=order_id,
-                userName=order_data['user']['name'])
+                userName=order_data['user']['name'],
+                items=items)
             response = stub.Enqueue(order_queue.EnqueueRequest(order=order_message))
             print(f"Order enqueued: {response}")
             
     except Exception as e:
         print(f"ERROR: Exception in enqueue_order: {e}")
         return {"error": {"code": "500","message": "Internal Server Error"}}, 500
-
+    print(response)
     return response
 
     

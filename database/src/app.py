@@ -44,37 +44,51 @@ class DatabaseService(database_grpc.DatabaseServiceServicer):
     
     def Read(self, request, context):
         with self.lock:
-            stock = self.store.get(request.title, 0)
-        return database.ReadResponse(stock=stock)
+            entry = self.store.get(request.title)
+            if entry:
+                stock = entry["stock"]
+                timestamp = entry["timestamp"]
+            else:
+                stock = 0
+                timestamp = 0
+        return database.ReadResponse(stock=stock, timestamp=timestamp)
 
 
     def Write(self, request, context):
+        is_forwarded = dict(context.invocation_metadata()).get('forwarded') == 'true'
+
+        with self.lock:
+        # Always write to local store first
+            
+            self.store[request.title] = {
+                "stock": request.new_stock,
+                "timestamp": request.timestamp
+            }
+        print(f"Successfully written in replica {self.database_id}")
         if self.database_id != self.current_leader_id:
-            try:
-                leader_stub = self.peer_stubs[self.current_leader_id]
-                return leader_stub.Write(request)
-            except grpc.RpcError:
-                context.set_code(grpc.StatusCode.UNAVAILABLE)
-                context.set_details("Could not reach leader")
-                return database.WriteResponse(success=False)
+            if not is_forwarded:
+                try:
+                    leader_stub = self.peer_stubs[self.current_leader_id]
+                    leader_stub.Write(request, metadata=(('forwarded', 'true'),))
+                    return database.WriteResponse(success=True)
+                except grpc.RpcError:
+                    context.set_code(grpc.StatusCode.UNAVAILABLE)
+                    context.set_details("Could not reach leader")
+                    return database.WriteResponse(success=False)
         else:
-            with self.lock:
-                self.store[request.title] = request.new_stock
+            ack_count = 0
+            for peer_id, stub in self.peer_stubs.items():
+                try:
+                    stub.Write(request, metadata=(('forwarded', 'true'),))
+                    ack_count += 1
+                except grpc.RpcError:
+                    continue
 
-                ack_count = 0
-                for peer_id, stub in self.peer_stubs.items():
-                    try:
-                        stub.Write(request)
-                        ack_count += 1
-                    except grpc.RpcError:
-                        continue
-
-                return database.WriteResponse(success=(ack_count >= 1))
+            return database.WriteResponse(success=(ack_count >= 1))
     
 
     def SendHeartbeat(self, request, context):
         self.last_heartbeat = time.time()
-        print("heartbeat", request)
         return database.HeartbeatResponse(alive=True)
 
 
@@ -163,10 +177,10 @@ class DatabaseService(database_grpc.DatabaseServiceServicer):
     
     def initialize_book_stock(self):
         books_data = {
-            "Learning Python": 7,
-            "JavaScript - The Good Parts": 15,
-            "Domain-Driven Design: Tackling Complexity in the Heart of Software": 15,
-            "Design Patterns: Elements of Reusable Object-Oriented Software": 15,
+            "Learning Python": {"stock": 7, "timestamp": int(time.time())},
+            "JavaScript - The Good Parts": {"stock": 15, "timestamp": int(time.time())},
+            "Domain-Driven Design: Tackling Complexity in the Heart of Software": {"stock": 15, "timestamp": int(time.time())},
+            "Design Patterns: Elements of Reusable Object-Oriented Software": {"stock": 15, "timestamp": int(time.time())},
         }
         self.store.update(books_data)
         print("Book store initialized:", self.store)
