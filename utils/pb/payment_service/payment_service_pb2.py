@@ -14,11 +14,25 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15payment_service.proto')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15payment_service.proto\x12\x07payment\"2\n\x0ePrepareRequest\x12\x10\n\x08order_id\x18\x01 \x01(\x05\x12\x0e\n\x06\x61mount\x18\x02 \x01(\x02\" \n\x0fPrepareResponse\x12\r\n\x05ready\x18\x01 \x01(\x08\"!\n\rCommitRequest\x12\x10\n\x08order_id\x18\x01 \x01(\x05\"!\n\x0e\x43ommitResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\" \n\x0c\x41\x62ortRequest\x12\x10\n\x08order_id\x18\x01 \x01(\x05\" \n\rAbortResponse\x12\x0f\n\x07\x61\x62orted\x18\x01 \x01(\x08\x32\xc1\x01\n\x0ePaymentService\x12<\n\x07Prepare\x12\x17.payment.PrepareRequest\x1a\x18.payment.PrepareResponse\x12\x39\n\x06\x43ommit\x12\x16.payment.CommitRequest\x1a\x17.payment.CommitResponse\x12\x36\n\x05\x41\x62ort\x12\x15.payment.AbortRequest\x1a\x16.payment.AbortResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'payment_service_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
+  _globals['_PREPAREREQUEST']._serialized_start=34
+  _globals['_PREPAREREQUEST']._serialized_end=84
+  _globals['_PREPARERESPONSE']._serialized_start=86
+  _globals['_PREPARERESPONSE']._serialized_end=118
+  _globals['_COMMITREQUEST']._serialized_start=120
+  _globals['_COMMITREQUEST']._serialized_end=153
+  _globals['_COMMITRESPONSE']._serialized_start=155
+  _globals['_COMMITRESPONSE']._serialized_end=188
+  _globals['_ABORTREQUEST']._serialized_start=190
+  _globals['_ABORTREQUEST']._serialized_end=222
+  _globals['_ABORTRESPONSE']._serialized_start=224
+  _globals['_ABORTRESPONSE']._serialized_end=256
+  _globals['_PAYMENTSERVICE']._serialized_start=259
+  _globals['_PAYMENTSERVICE']._serialized_end=452
 # @@protoc_insertion_point(module_scope)

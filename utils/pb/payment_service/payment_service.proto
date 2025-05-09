@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package payment;
+
+service PaymentService {
+    rpc Prepare (PrepareRequest) returns (PrepareResponse);
+    rpc Commit (CommitRequest) returns (CommitResponse);
+    rpc Abort (AbortRequest) returns (AbortResponse);
+}
+
+message PrepareRequest {
+    int32 order_id = 1;
+    // Add other relevant payment details here, e.g., amount, user info
+    float amount = 2;
+}
+
+message PrepareResponse {
+    bool ready = 1; // Indicates if the payment can be processed
+}
+
+message CommitRequest {
+    int32 order_id = 1;
+}
+
+message CommitResponse {
+    bool success = 1;
+}
+
+message AbortRequest {
+    int32 order_id = 1;
+}
+
+message AbortResponse {
+    bool aborted = 1;
+}

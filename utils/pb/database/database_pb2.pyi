@@ -1,6 +1,7 @@
+from google.protobuf.internal import containers as _containers
 from google.protobuf import descriptor as _descriptor
 from google.protobuf import message as _message
-from typing import ClassVar as _ClassVar, Optional as _Optional
+from typing import ClassVar as _ClassVar, Iterable as _Iterable, Mapping as _Mapping, Optional as _Optional, Union as _Union
 
 DESCRIPTOR: _descriptor.FileDescriptor
 
@@ -67,3 +68,48 @@ class CoordinatorMessage(_message.Message):
 class Empty(_message.Message):
     __slots__ = ()
     def __init__(self) -> None: ...
+
+class DatabasePrepareRequest(_message.Message):
+    __slots__ = ("order_id", "item_updates")
+    class ItemUpdate(_message.Message):
+        __slots__ = ("title", "quantity_change")
+        TITLE_FIELD_NUMBER: _ClassVar[int]
+        QUANTITY_CHANGE_FIELD_NUMBER: _ClassVar[int]
+        title: str
+        quantity_change: int
+        def __init__(self, title: _Optional[str] = ..., quantity_change: _Optional[int] = ...) -> None: ...
+    ORDER_ID_FIELD_NUMBER: _ClassVar[int]
+    ITEM_UPDATES_FIELD_NUMBER: _ClassVar[int]
+    order_id: int
+    item_updates: _containers.RepeatedCompositeFieldContainer[DatabasePrepareRequest.ItemUpdate]
+    def __init__(self, order_id: _Optional[int] = ..., item_updates: _Optional[_Iterable[_Union[DatabasePrepareRequest.ItemUpdate, _Mapping]]] = ...) -> None: ...
+
+class DatabasePrepareResponse(_message.Message):
+    __slots__ = ("ready",)
+    READY_FIELD_NUMBER: _ClassVar[int]
+    ready: bool
+    def __init__(self, ready: bool = ...) -> None: ...
+
+class DatabaseCommitRequest(_message.Message):
+    __slots__ = ("order_id",)
+    ORDER_ID_FIELD_NUMBER: _ClassVar[int]
+    order_id: int
+    def __init__(self, order_id: _Optional[int] = ...) -> None: ...
+
+class DatabaseCommitResponse(_message.Message):
+    __slots__ = ("success",)
+    SUCCESS_FIELD_NUMBER: _ClassVar[int]
+    success: bool
+    def __init__(self, success: bool = ...) -> None: ...
+
+class DatabaseAbortRequest(_message.Message):
+    __slots__ = ("order_id",)
+    ORDER_ID_FIELD_NUMBER: _ClassVar[int]
+    order_id: int
+    def __init__(self, order_id: _Optional[int] = ...) -> None: ...
+
+class DatabaseAbortResponse(_message.Message):
+    __slots__ = ("aborted",)
+    ABORTED_FIELD_NUMBER: _ClassVar[int]
+    aborted: bool
+    def __init__(self, aborted: bool = ...) -> None: ...

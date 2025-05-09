@@ -11,6 +11,11 @@ service DatabaseService {
     rpc StartElection(ElectionRequest) returns (ElectionResponse);
     // Notification that a new leader is chosen
     rpc AnnounceLeader(CoordinatorMessage) returns (Empty);
+
+    // Two-Phase Commit Methods
+    rpc Prepare (DatabasePrepareRequest) returns (DatabasePrepareResponse);
+    rpc Commit (DatabaseCommitRequest) returns (DatabaseCommitResponse);
+    rpc Abort (DatabaseAbortRequest) returns (DatabaseAbortResponse);
 }
 
 message ReadRequest {
@@ -53,3 +58,35 @@ message CoordinatorMessage {
 }
 
 message Empty {}
+
+// Two-Phase Commit Messages for Database
+message DatabasePrepareRequest {
+    int32 order_id = 1;
+    // Information needed by the database to prepare the update,
+    // e.g., the items and quantities from the order.
+    message ItemUpdate {
+        string title = 1;
+        int32 quantity_change = 2; // Negative for reducing stock
+    }
+    repeated ItemUpdate item_updates = 2;
+}
+
+message DatabasePrepareResponse {
+    bool ready = 1; // Indicates if the database can prepare the update
+}
+
+message DatabaseCommitRequest {
+    int32 order_id = 1;
+}
+
+message DatabaseCommitResponse {
+    bool success = 1;
+}
+
+message DatabaseAbortRequest {
+    int32 order_id = 1;
+}
+
+message DatabaseAbortResponse {
+    bool aborted = 1;
+}

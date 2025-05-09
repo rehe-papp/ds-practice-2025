@@ -39,6 +39,21 @@ class DatabaseServiceStub(object):
                 request_serializer=database__pb2.CoordinatorMessage.SerializeToString,
                 response_deserializer=database__pb2.Empty.FromString,
                 )
+        self.Prepare = channel.unary_unary(
+                '/database.DatabaseService/Prepare',
+                request_serializer=database__pb2.DatabasePrepareRequest.SerializeToString,
+                response_deserializer=database__pb2.DatabasePrepareResponse.FromString,
+                )
+        self.Commit = channel.unary_unary(
+                '/database.DatabaseService/Commit',
+                request_serializer=database__pb2.DatabaseCommitRequest.SerializeToString,
+                response_deserializer=database__pb2.DatabaseCommitResponse.FromString,
+                )
+        self.Abort = channel.unary_unary(
+                '/database.DatabaseService/Abort',
+                request_serializer=database__pb2.DatabaseAbortRequest.SerializeToString,
+                response_deserializer=database__pb2.DatabaseAbortResponse.FromString,
+                )
 
 
 class DatabaseServiceServicer(object):
@@ -77,6 +92,25 @@ class DatabaseServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def Prepare(self, request, context):
+        """Two-Phase Commit Methods
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Commit(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Abort(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_DatabaseServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -104,6 +138,21 @@ def add_DatabaseServiceServicer_to_server(servicer, server):
                     servicer.AnnounceLeader,
                     request_deserializer=database__pb2.CoordinatorMessage.FromString,
                     response_serializer=database__pb2.Empty.SerializeToString,
+            ),
+            'Prepare': grpc.unary_unary_rpc_method_handler(
+                    servicer.Prepare,
+                    request_deserializer=database__pb2.DatabasePrepareRequest.FromString,
+                    response_serializer=database__pb2.DatabasePrepareResponse.SerializeToString,
+            ),
+            'Commit': grpc.unary_unary_rpc_method_handler(
+                    servicer.Commit,
+                    request_deserializer=database__pb2.DatabaseCommitRequest.FromString,
+                    response_serializer=database__pb2.DatabaseCommitResponse.SerializeToString,
+            ),
+            'Abort': grpc.unary_unary_rpc_method_handler(
+                    servicer.Abort,
+                    request_deserializer=database__pb2.DatabaseAbortRequest.FromString,
+                    response_serializer=database__pb2.DatabaseAbortResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -197,5 +246,56 @@ class DatabaseService(object):
         return grpc.experimental.unary_unary(request, target, '/database.DatabaseService/AnnounceLeader',
             database__pb2.CoordinatorMessage.SerializeToString,
             database__pb2.Empty.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Prepare(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/database.DatabaseService/Prepare',
+            database__pb2.DatabasePrepareRequest.SerializeToString,
+            database__pb2.DatabasePrepareResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Commit(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/database.DatabaseService/Commit',
+            database__pb2.DatabaseCommitRequest.SerializeToString,
+            database__pb2.DatabaseCommitResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def Abort(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/database.DatabaseService/Abort',
+            database__pb2.DatabaseAbortRequest.SerializeToString,
+            database__pb2.DatabaseAbortResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

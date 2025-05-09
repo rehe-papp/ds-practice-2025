@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x64\x61tabase.proto\x12\x08\x64\x61tabase\"\x1c\n\x0bReadRequest\x12\r\n\x05title\x18\x01 \x01(\t\"0\n\x0cReadResponse\x12\r\n\x05stock\x18\x01 \x01(\x05\x12\x11\n\ttimestamp\x18\x02 \x01(\x03\"C\n\x0cWriteRequest\x12\r\n\x05title\x18\x01 \x01(\t\x12\x11\n\tnew_stock\x18\x02 \x01(\x05\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\" \n\rWriteResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\",\n\x10HeartbeatRequest\x12\x18\n\x10\x66rom_database_id\x18\x01 \x01(\x05\"\"\n\x11HeartbeatResponse\x12\r\n\x05\x61live\x18\x01 \x01(\x08\"+\n\x0f\x45lectionRequest\x12\x18\n\x10\x66rom_database_id\x18\x01 \x01(\x05\"(\n\x10\x45lectionResponse\x12\x14\n\x0c\x61\x63knowledged\x18\x01 \x01(\x08\"+\n\x12\x43oordinatorMessage\x12\x15\n\rnew_leader_id\x18\x01 \x01(\x05\"\x07\n\x05\x45mpty2\xd5\x02\n\x0f\x44\x61tabaseService\x12\x35\n\x04Read\x12\x15.database.ReadRequest\x1a\x16.database.ReadResponse\x12\x38\n\x05Write\x12\x16.database.WriteRequest\x1a\x17.database.WriteResponse\x12H\n\rSendHeartbeat\x12\x1a.database.HeartbeatRequest\x1a\x1b.database.HeartbeatResponse\x12\x46\n\rStartElection\x12\x19.database.ElectionRequest\x1a\x1a.database.ElectionResponse\x12?\n\x0e\x41nnounceLeader\x12\x1c.database.CoordinatorMessage\x1a\x0f.database.Emptyb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0e\x64\x61tabase.proto\x12\x08\x64\x61tabase\"\x1c\n\x0bReadRequest\x12\r\n\x05title\x18\x01 \x01(\t\"0\n\x0cReadResponse\x12\r\n\x05stock\x18\x01 \x01(\x05\x12\x11\n\ttimestamp\x18\x02 \x01(\x03\"C\n\x0cWriteRequest\x12\r\n\x05title\x18\x01 \x01(\t\x12\x11\n\tnew_stock\x18\x02 \x01(\x05\x12\x11\n\ttimestamp\x18\x03 \x01(\x03\" \n\rWriteResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\",\n\x10HeartbeatRequest\x12\x18\n\x10\x66rom_database_id\x18\x01 \x01(\x05\"\"\n\x11HeartbeatResponse\x12\r\n\x05\x61live\x18\x01 \x01(\x08\"+\n\x0f\x45lectionRequest\x12\x18\n\x10\x66rom_database_id\x18\x01 \x01(\x05\"(\n\x10\x45lectionResponse\x12\x14\n\x0c\x61\x63knowledged\x18\x01 \x01(\x08\"+\n\x12\x43oordinatorMessage\x12\x15\n\rnew_leader_id\x18\x01 \x01(\x05\"\x07\n\x05\x45mpty\"\xa3\x01\n\x16\x44\x61tabasePrepareRequest\x12\x10\n\x08order_id\x18\x01 \x01(\x05\x12\x41\n\x0citem_updates\x18\x02 \x03(\x0b\x32+.database.DatabasePrepareRequest.ItemUpdate\x1a\x34\n\nItemUpdate\x12\r\n\x05title\x18\x01 \x01(\t\x12\x17\n\x0fquantity_change\x18\x02 \x01(\x05\"(\n\x17\x44\x61tabasePrepareResponse\x12\r\n\x05ready\x18\x01 \x01(\x08\")\n\x15\x44\x61tabaseCommitRequest\x12\x10\n\x08order_id\x18\x01 \x01(\x05\")\n\x16\x44\x61tabaseCommitResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\"(\n\x14\x44\x61tabaseAbortRequest\x12\x10\n\x08order_id\x18\x01 \x01(\x05\"(\n\x15\x44\x61tabaseAbortResponse\x12\x0f\n\x07\x61\x62orted\x18\x01 \x01(\x08\x32\xbc\x04\n\x0f\x44\x61tabaseService\x12\x35\n\x04Read\x12\x15.database.ReadRequest\x1a\x16.database.ReadResponse\x12\x38\n\x05Write\x12\x16.database.WriteRequest\x1a\x17.database.WriteResponse\x12H\n\rSendHeartbeat\x12\x1a.database.HeartbeatRequest\x1a\x1b.database.HeartbeatResponse\x12\x46\n\rStartElection\x12\x19.database.ElectionRequest\x1a\x1a.database.ElectionResponse\x12?\n\x0e\x41nnounceLeader\x12\x1c.database.CoordinatorMessage\x1a\x0f.database.Empty\x12N\n\x07Prepare\x12 .database.DatabasePrepareRequest\x1a!.database.DatabasePrepareResponse\x12K\n\x06\x43ommit\x12\x1f.database.DatabaseCommitRequest\x1a .database.DatabaseCommitResponse\x12H\n\x05\x41\x62ort\x12\x1e.database.DatabaseAbortRequest\x1a\x1f.database.DatabaseAbortResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -41,6 +41,20 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_COORDINATORMESSAGE']._serialized_end=423
   _globals['_EMPTY']._serialized_start=425
   _globals['_EMPTY']._serialized_end=432
-  _globals['_DATABASESERVICE']._serialized_start=435
-  _globals['_DATABASESERVICE']._serialized_end=776
+  _globals['_DATABASEPREPAREREQUEST']._serialized_start=435
+  _globals['_DATABASEPREPAREREQUEST']._serialized_end=598
+  _globals['_DATABASEPREPAREREQUEST_ITEMUPDATE']._serialized_start=546
+  _globals['_DATABASEPREPAREREQUEST_ITEMUPDATE']._serialized_end=598
+  _globals['_DATABASEPREPARERESPONSE']._serialized_start=600
+  _globals['_DATABASEPREPARERESPONSE']._serialized_end=640
+  _globals['_DATABASECOMMITREQUEST']._serialized_start=642
+  _globals['_DATABASECOMMITREQUEST']._serialized_end=683
+  _globals['_DATABASECOMMITRESPONSE']._serialized_start=685
+  _globals['_DATABASECOMMITRESPONSE']._serialized_end=726
+  _globals['_DATABASEABORTREQUEST']._serialized_start=728
+  _globals['_DATABASEABORTREQUEST']._serialized_end=768
+  _globals['_DATABASEABORTRESPONSE']._serialized_start=770
+  _globals['_DATABASEABORTRESPONSE']._serialized_end=810
+  _globals['_DATABASESERVICE']._serialized_start=813
+  _globals['_DATABASESERVICE']._serialized_end=1385
 # @@protoc_insertion_point(module_scope)

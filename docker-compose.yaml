@@ -267,3 +267,25 @@ services:
       - ./utils:/app/utils
       # Mount the database/src directory in the current directory to the /app/database/src directory in the container
       - ./database/src:/app/database/src
+  payment_service:
+    build:
+      # Use the current directory as the build context
+      # This allows us to access the files in the current directory inside the Dockerfile
+      context: ./
+      # Use the Dockerfile in the payment_service directorys
+      dockerfile: ./payment_service/Dockerfile
+    ports:
+      # Expose port 50061 on the host, and map port 50061 of the container to port 50061 on the host
+      - 50061:50061
+    environment:
+      # Pass the environment variables to the container
+      # The PYTHONUNBUFFERED environment variable ensures that the output from the application is logged to the console
+      - PYTHONUNBUFFERED=TRUE
+      # The PYTHONFILE environment variable specifies the absolute entry point of the application
+      # Check app.py in the payment_service directory to see how this is used
+      - PYTHONFILE=/app/payment_service/src/app.py
+    volumes:
+      # Mount the utils directory in the current directory to the /app/utils directory in the container
+      - ./utils:/app/utils
+      # Mount the payment_service/src directory in the current directory to the /app//src directory in the container
+      - ./payment_service/src:/app/payment_service/src
