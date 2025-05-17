@@ -33,14 +33,25 @@ class SuggestionsService(suggestions_grpc.SuggestionsServiceServicer):
         if order_id not in self.order_data:
             return suggestions.SuggestionsResponse(error=True, message="Order not initialized.")
 
+        received_vc_from_orchestrator = dict(request.vector_clock.clock)
+        print(f"Suggestions: Received ProcessSuggestions request for order {order_id} with vector clock from orchestrator: {received_vc_from_orchestrator}")
+
+        local_vc = self.order_data[order_id]["vector_clock"]
+        print(f"Suggestions: Local vector clock before processing: {local_vc}")
+
+        fraud_processed = received_vc_from_orchestrator.get("fraud_detection", 0) > 1
+        verification_processed = received_vc_from_orchestrator.get("transaction_verification", 0) > 1
+
+        if not fraud_processed or not verification_processed:
+            return suggestions.SuggestionsResponse(error=True, message="Waiting for Fraud Detection and Transaction Verification to complete.")
+
         book_data = [
             {"bookID": 4, "title": "The Example Book", "author": "John Doe"},
             {"bookID": 5, "title": "Another Book", "author": "Jane Smith"},
         ]
 
-        # Update vector clock
+        # Update vector clock with received clock
         self.update_vector_clock(order_id, dict(request.vector_clock.clock))
-        print(f"Suggestions: Processing order {order_id} with vector clock {self.order_data[order_id]['vector_clock']}")
 
         response = suggestions.SuggestionsResponse(error=False)
 
@@ -51,11 +62,15 @@ class SuggestionsService(suggestions_grpc.SuggestionsServiceServicer):
 
         response.suggestions.extend(all_suggestions)
 
+        local_vc = self.order_data[order_id]["vector_clock"]
+        local_vc["suggestions"] = local_vc.get("suggestions", 0) + 1
+        print(f"Suggestions: check for return {local_vc}")
+
+        
         # Increment suggestions's own clock before returning
         self.order_data[order_id]["vector_clock"]["suggestions"] = self.order_data[order_id]["vector_clock"].get("suggestions", 0) + 1
-
-        response.vector_clock.clock.update(self.order_data[order_id]["vector_clock"])  # send back updated vector clock
-        print(f"Suggestions: Processed order {order_id}. Result: {len(response.suggestions)} books suggested.")
+        response.vector_clock.clock.update(self.order_data[order_id]["vector_clock"])
+        print(f"Suggestions: Processing order {order_id} with vector clock {self.order_data[order_id]['vector_clock']} (after processing)")
         return response
 
     def ClearData(self, request, context):

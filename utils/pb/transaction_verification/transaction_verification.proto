@@ -6,10 +6,21 @@ service TransactionVerificationService {
   rpc InitializeVerification (TransactionVerificationRequest) returns (TransactionVerificationResponse);
   rpc ProcessVerification (ProcessVerificationRequest) returns (TransactionVerificationResponse);
   rpc ClearData(ClearDataRequest) returns (ClearDataResponse);
+  rpc ReceiveVectorClock (VectorClockUpdate) returns (VectorClockUpdateResponse); // Add this
 }
 
 message VectorClock {
-  map<string, int32> clock = 1;
+    map<string, int32> clock = 1;
+}
+
+message VectorClockUpdate {
+  string order_id = 1;
+  VectorClock vector_clock = 2;
+}
+
+message VectorClockUpdateResponse {
+  bool success = 1;
+  string message = 2;
 }
 
 message User {

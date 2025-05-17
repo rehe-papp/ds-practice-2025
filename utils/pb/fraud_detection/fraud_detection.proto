@@ -6,12 +6,22 @@ service FraudDetectionService {
   rpc InitializeFraud (FraudRequest) returns (FraudResponse);
   rpc ProcessFraud (ProcessFraudRequest) returns (FraudResponse);
   rpc ClearData(ClearDataRequest) returns (ClearDataResponse);
+  rpc SendVectorClock (VectorClockRequest) returns (VectorClockResponse);
 }
 
 message VectorClock {
-  map<string, int32> clock = 1;
+    map<string, int32> clock = 1;
 }
 
+message VectorClockRequest {
+  string order_id = 1;
+  VectorClock vector_clock = 2;
+}
+
+message VectorClockResponse {
+  bool success = 1;
+  string message = 2;
+}
 
 message User {
     string name = 1;

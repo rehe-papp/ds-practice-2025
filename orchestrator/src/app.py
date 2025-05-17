@@ -249,7 +249,7 @@ def checkout():
     request_data = json.loads(request.data)
     order_id = str(random.randint(0, 2**32-1))
     book_ids = [int(item.get('bookid')) for item in request_data.get('items', []) if item.get('bookid') is not None]
-    vector_clock = {"orchestrator": 1}
+    vector_clock = {"orchestrator": 1, "fraud_detection": 0, "transaction_verification": 0, "suggestions": 0}
 
     try:
         with ThreadPoolExecutor(max_workers=3) as executor:
@@ -264,30 +264,38 @@ def checkout():
                     broadcast_clear(order_id, vector_clock.copy())
                     return jsonify({"error": {"code": "500", "message": result.message}}), 500
 
-        vector_clock["orchestrator"] += 1
-        print(f"Orchestrator: After initialization, vector_clock: {vector_clock}")
-
+        # Process Fraud
         fraud_result = process_fraud(order_id, vector_clock.copy())
-        print(f"Orchestrator: Before fraud update, vector_clock: {vector_clock}")
+        print(f"Orchestrator: After fraud processing, result: {fraud_result.is_valid}, message: {fraud_result.message}, vector_clock before update: {vector_clock}")
         vector_clock.update(fraud_result.vector_clock.clock)
+        vector_clock["orchestrator"] += 1
         print(f"Orchestrator: After fraud update, vector_clock: {vector_clock}")
 
-        vector_clock["orchestrator"] += 1
-        print(f"Orchestrator: After fraud processing, vector_clock: {vector_clock}")
+        # Check Fraud Result before proceeding to Verification
+        if not fraud_result.is_valid:
+            broadcast_clear(order_id, vector_clock)
+            return jsonify({"error": {"code": "400", "message": f"Fraud check failed: {fraud_result.message}"}}), 400
 
+        # Process Verification
         user_data = request_data.get('user')
         if user_data is None:
-            broadcast_clear(order_id, vector_clock.copy())
+            broadcast_clear(order_id, vector_clock)
             return jsonify({"error": {"code": "400", "message": "Missing user information"}}), 400
 
-        verification_result = process_verification(order_id, 
-                                                                 vector_clock, 
-                                                                 request_data.get('termsAccepted', False), 
-                                                                 request_data.get('items', []), 
-                                                                 user_data,
-                                                                 request_data.get('creditCard', {}), 
-                                                                 request_data.get('billingAddress', {}))
+        verification_result = process_verification(
+            order_id,
+            vector_clock,
+            request_data.get('termsAccepted', False),
+            request_data.get('items', []),
+            user_data,
+            request_data.get('creditCard', {}),
+            request_data.get('billingAddress', {})
+        )
 
+        print(f"Orchestrator: After verification processing, result: {verification_result.is_valid}, message: {verification_result.message}, vector_clock before update: {vector_clock}")
+        vector_clock.update(verification_result.vector_clock.clock)
+        vector_clock["orchestrator"] += 1
+        print(f"Orchestrator: After verification update, vector_clock: {vector_clock}")
 
         if verification_result.is_valid:
             queue_response = enqueue_order(int(order_id), request_data)
@@ -296,12 +304,10 @@ def checkout():
             broadcast_clear(order_id, vector_clock)
             return jsonify({"error": {"code": "400", "message": verification_result.message}}), 400
 
-        vector_clock.update(verification_result.vector_clock.clock)
-        vector_clock["orchestrator"] += 1
-        print(f"Orchestrator: After verification processing, vector_clock: {vector_clock}")
-
+        # Process Suggestions
         suggestions_result = process_suggestions(order_id, vector_clock.copy())
         vector_clock.update(suggestions_result.vector_clock.clock)
+        vector_clock["orchestrator"] += 1
         print(f"Orchestrator: After suggestions processing, vector_clock: {vector_clock}")
 
         broadcast_clear(order_id, vector_clock.copy())
@@ -318,7 +324,6 @@ def checkout():
         traceback.print_exc()
         status_code = "500"
     return jsonify({"error": {"code": "500", "message": "Internal Server Error", "details": f"gRPC status: {status_code}, details: {error_message}"}}), 500
-
 
 
 if __name__ == '__main__':

@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1etransaction_verification.proto\x12\x18transaction_verification\"|\n\x0bVectorClock\x12?\n\x05\x63lock\x18\x01 \x03(\x0b\x32\x30.transaction_verification.VectorClock.ClockEntry\x1a,\n\nClockEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"%\n\x04User\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07\x63ontact\x18\x02 \x01(\t\"A\n\nCreditCard\x12\x0e\n\x06number\x18\x01 \x01(\t\x12\x16\n\x0e\x65xpirationDate\x18\x02 \x01(\t\x12\x0b\n\x03\x63vv\x18\x03 \x01(\t\"G\n\x04Item\x12\x0e\n\x06\x62ookid\x18\x01 \x01(\x05\x12\x10\n\x08quantity\x18\x02 \x01(\x05\x12\r\n\x05title\x18\x03 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x04 \x01(\t\"T\n\x07\x41\x64\x64ress\x12\x0e\n\x06street\x18\x01 \x01(\t\x12\x0c\n\x04\x63ity\x18\x02 \x01(\t\x12\r\n\x05state\x18\x03 \x01(\t\x12\x0b\n\x03zip\x18\x04 \x01(\t\x12\x0f\n\x07\x63ountry\x18\x05 \x01(\t\"\x9b\x03\n\x1eTransactionVerificationRequest\x12\x10\n\x08order_id\x18\x01 \x01(\t\x12,\n\x04user\x18\x02 \x01(\x0b\x32\x1e.transaction_verification.User\x12\x38\n\ncreditCard\x18\x03 \x01(\x0b\x32$.transaction_verification.CreditCard\x12-\n\x05items\x18\x04 \x03(\x0b\x32\x1e.transaction_verification.Item\x12\x39\n\x0e\x62illingAddress\x18\x05 \x01(\x0b\x32!.transaction_verification.Address\x12\x13\n\x0buserComment\x18\x06 \x01(\t\x12\x16\n\x0eshippingMethod\x18\x07 \x01(\t\x12\x15\n\rtermsAccepted\x18\x08 \x01(\x08\x12;\n\x0cvector_clock\x18\t \x01(\x0b\x32%.transaction_verification.VectorClock\x12\x14\n\x0cgiftWrapping\x18\n \x01(\x08\"\x81\x01\n\x1fTransactionVerificationResponse\x12\x10\n\x08is_valid\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12;\n\x0cvector_clock\x18\x03 \x01(\x0b\x32%.transaction_verification.VectorClock\"\xd4\x02\n\x1aProcessVerificationRequest\x12\x10\n\x08order_id\x18\x01 \x01(\t\x12;\n\x0cvector_clock\x18\x02 \x01(\x0b\x32%.transaction_verification.VectorClock\x12\x15\n\rtermsAccepted\x18\x03 \x01(\x08\x12-\n\x05items\x18\x04 \x03(\x0b\x32\x1e.transaction_verification.Item\x12,\n\x04user\x18\x05 \x01(\x0b\x32\x1e.transaction_verification.User\x12\x38\n\ncreditCard\x18\x06 \x01(\x0b\x32$.transaction_verification.CreditCard\x12\x39\n\x0e\x62illingAddress\x18\x07 \x01(\x0b\x32!.transaction_verification.Address\"a\n\x10\x43learDataRequest\x12\x10\n\x08order_id\x18\x01 \x01(\t\x12;\n\x0cvector_clock\x18\x02 \x01(\x0b\x32%.transaction_verification.VectorClock\"$\n\x11\x43learDataResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x32\x9f\x03\n\x1eTransactionVerificationService\x12\x8d\x01\n\x16InitializeVerification\x12\x38.transaction_verification.TransactionVerificationRequest\x1a\x39.transaction_verification.TransactionVerificationResponse\x12\x86\x01\n\x13ProcessVerification\x12\x34.transaction_verification.ProcessVerificationRequest\x1a\x39.transaction_verification.TransactionVerificationResponse\x12\x64\n\tClearData\x12*.transaction_verification.ClearDataRequest\x1a+.transaction_verification.ClearDataResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x1etransaction_verification.proto\x12\x18transaction_verification\"|\n\x0bVectorClock\x12?\n\x05\x63lock\x18\x01 \x03(\x0b\x32\x30.transaction_verification.VectorClock.ClockEntry\x1a,\n\nClockEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\x05:\x02\x38\x01\"b\n\x11VectorClockUpdate\x12\x10\n\x08order_id\x18\x01 \x01(\t\x12;\n\x0cvector_clock\x18\x02 \x01(\x0b\x32%.transaction_verification.VectorClock\"=\n\x19VectorClockUpdateResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\"%\n\x04User\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x0f\n\x07\x63ontact\x18\x02 \x01(\t\"A\n\nCreditCard\x12\x0e\n\x06number\x18\x01 \x01(\t\x12\x16\n\x0e\x65xpirationDate\x18\x02 \x01(\t\x12\x0b\n\x03\x63vv\x18\x03 \x01(\t\"G\n\x04Item\x12\x0e\n\x06\x62ookid\x18\x01 \x01(\x05\x12\x10\n\x08quantity\x18\x02 \x01(\x05\x12\r\n\x05title\x18\x03 \x01(\t\x12\x0e\n\x06\x61uthor\x18\x04 \x01(\t\"T\n\x07\x41\x64\x64ress\x12\x0e\n\x06street\x18\x01 \x01(\t\x12\x0c\n\x04\x63ity\x18\x02 \x01(\t\x12\r\n\x05state\x18\x03 \x01(\t\x12\x0b\n\x03zip\x18\x04 \x01(\t\x12\x0f\n\x07\x63ountry\x18\x05 \x01(\t\"\x9b\x03\n\x1eTransactionVerificationRequest\x12\x10\n\x08order_id\x18\x01 \x01(\t\x12,\n\x04user\x18\x02 \x01(\x0b\x32\x1e.transaction_verification.User\x12\x38\n\ncreditCard\x18\x03 \x01(\x0b\x32$.transaction_verification.CreditCard\x12-\n\x05items\x18\x04 \x03(\x0b\x32\x1e.transaction_verification.Item\x12\x39\n\x0e\x62illingAddress\x18\x05 \x01(\x0b\x32!.transaction_verification.Address\x12\x13\n\x0buserComment\x18\x06 \x01(\t\x12\x16\n\x0eshippingMethod\x18\x07 \x01(\t\x12\x15\n\rtermsAccepted\x18\x08 \x01(\x08\x12;\n\x0cvector_clock\x18\t \x01(\x0b\x32%.transaction_verification.VectorClock\x12\x14\n\x0cgiftWrapping\x18\n \x01(\x08\"\x81\x01\n\x1fTransactionVerificationResponse\x12\x10\n\x08is_valid\x18\x01 \x01(\x08\x12\x0f\n\x07message\x18\x02 \x01(\t\x12;\n\x0cvector_clock\x18\x03 \x01(\x0b\x32%.transaction_verification.VectorClock\"\xd4\x02\n\x1aProcessVerificationRequest\x12\x10\n\x08order_id\x18\x01 \x01(\t\x12;\n\x0cvector_clock\x18\x02 \x01(\x0b\x32%.transaction_verification.VectorClock\x12\x15\n\rtermsAccepted\x18\x03 \x01(\x08\x12-\n\x05items\x18\x04 \x03(\x0b\x32\x1e.transaction_verification.Item\x12,\n\x04user\x18\x05 \x01(\x0b\x32\x1e.transaction_verification.User\x12\x38\n\ncreditCard\x18\x06 \x01(\x0b\x32$.transaction_verification.CreditCard\x12\x39\n\x0e\x62illingAddress\x18\x07 \x01(\x0b\x32!.transaction_verification.Address\"a\n\x10\x43learDataRequest\x12\x10\n\x08order_id\x18\x01 \x01(\t\x12;\n\x0cvector_clock\x18\x02 \x01(\x0b\x32%.transaction_verification.VectorClock\"$\n\x11\x43learDataResponse\x12\x0f\n\x07success\x18\x01 \x01(\x08\x32\x97\x04\n\x1eTransactionVerificationService\x12\x8d\x01\n\x16InitializeVerification\x12\x38.transaction_verification.TransactionVerificationRequest\x1a\x39.transaction_verification.TransactionVerificationResponse\x12\x86\x01\n\x13ProcessVerification\x12\x34.transaction_verification.ProcessVerificationRequest\x1a\x39.transaction_verification.TransactionVerificationResponse\x12\x64\n\tClearData\x12*.transaction_verification.ClearDataRequest\x1a+.transaction_verification.ClearDataResponse\x12v\n\x12ReceiveVectorClock\x12+.transaction_verification.VectorClockUpdate\x1a\x33.transaction_verification.VectorClockUpdateResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -27,24 +27,28 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_VECTORCLOCK']._serialized_end=184
   _globals['_VECTORCLOCK_CLOCKENTRY']._serialized_start=140
   _globals['_VECTORCLOCK_CLOCKENTRY']._serialized_end=184
-  _globals['_USER']._serialized_start=186
-  _globals['_USER']._serialized_end=223
-  _globals['_CREDITCARD']._serialized_start=225
-  _globals['_CREDITCARD']._serialized_end=290
-  _globals['_ITEM']._serialized_start=292
-  _globals['_ITEM']._serialized_end=363
-  _globals['_ADDRESS']._serialized_start=365
-  _globals['_ADDRESS']._serialized_end=449
-  _globals['_TRANSACTIONVERIFICATIONREQUEST']._serialized_start=452
-  _globals['_TRANSACTIONVERIFICATIONREQUEST']._serialized_end=863
-  _globals['_TRANSACTIONVERIFICATIONRESPONSE']._serialized_start=866
-  _globals['_TRANSACTIONVERIFICATIONRESPONSE']._serialized_end=995
-  _globals['_PROCESSVERIFICATIONREQUEST']._serialized_start=998
-  _globals['_PROCESSVERIFICATIONREQUEST']._serialized_end=1338
-  _globals['_CLEARDATAREQUEST']._serialized_start=1340
-  _globals['_CLEARDATAREQUEST']._serialized_end=1437
-  _globals['_CLEARDATARESPONSE']._serialized_start=1439
-  _globals['_CLEARDATARESPONSE']._serialized_end=1475
-  _globals['_TRANSACTIONVERIFICATIONSERVICE']._serialized_start=1478
-  _globals['_TRANSACTIONVERIFICATIONSERVICE']._serialized_end=1893
+  _globals['_VECTORCLOCKUPDATE']._serialized_start=186
+  _globals['_VECTORCLOCKUPDATE']._serialized_end=284
+  _globals['_VECTORCLOCKUPDATERESPONSE']._serialized_start=286
+  _globals['_VECTORCLOCKUPDATERESPONSE']._serialized_end=347
+  _globals['_USER']._serialized_start=349
+  _globals['_USER']._serialized_end=386
+  _globals['_CREDITCARD']._serialized_start=388
+  _globals['_CREDITCARD']._serialized_end=453
+  _globals['_ITEM']._serialized_start=455
+  _globals['_ITEM']._serialized_end=526
+  _globals['_ADDRESS']._serialized_start=528
+  _globals['_ADDRESS']._serialized_end=612
+  _globals['_TRANSACTIONVERIFICATIONREQUEST']._serialized_start=615
+  _globals['_TRANSACTIONVERIFICATIONREQUEST']._serialized_end=1026
+  _globals['_TRANSACTIONVERIFICATIONRESPONSE']._serialized_start=1029
+  _globals['_TRANSACTIONVERIFICATIONRESPONSE']._serialized_end=1158
+  _globals['_PROCESSVERIFICATIONREQUEST']._serialized_start=1161
+  _globals['_PROCESSVERIFICATIONREQUEST']._serialized_end=1501
+  _globals['_CLEARDATAREQUEST']._serialized_start=1503
+  _globals['_CLEARDATAREQUEST']._serialized_end=1600
+  _globals['_CLEARDATARESPONSE']._serialized_start=1602
+  _globals['_CLEARDATARESPONSE']._serialized_end=1638
+  _globals['_TRANSACTIONVERIFICATIONSERVICE']._serialized_start=1641
+  _globals['_TRANSACTIONVERIFICATIONSERVICE']._serialized_end=2176
 # @@protoc_insertion_point(module_scope)

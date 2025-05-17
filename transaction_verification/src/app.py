@@ -28,6 +28,16 @@ class TransactionVerificationService(transaction_verification_grpc.TransactionVe
         print(f"Transaction Verification: Initialized order {order_id} with vector clock {self.order_data[order_id]['vector_clock']}")
         return transaction_verification.TransactionVerificationResponse(is_valid=True)  # return a success response
 
+    def ReceiveVectorClock(self, request, context):
+        order_id = request.order_id
+        received_vc = dict(request.vector_clock.clock)
+        if order_id in self.order_data:
+            self.update_vector_clock(order_id, received_vc)
+            print(f"Transaction Verification: Received and merged vector clock from Fraud Detection for order {order_id}. Updated VC: {self.order_data[order_id]['vector_clock']}")
+            return transaction_verification.VectorClockUpdateResponse(success=True, message="Vector clock updated.")
+        else:
+            return transaction_verification.VectorClockUpdateResponse(success=False, message="Order not found.")
+
     def ProcessVerification(self, request, context):
         order_id = request.order_id
         if order_id not in self.order_data:
@@ -60,12 +70,15 @@ class TransactionVerificationService(transaction_verification_grpc.TransactionVe
         else:
             response.is_valid = True
             response.message = "Transaction is valid."
+        
+        local_vc = self.order_data[order_id]["vector_clock"]
+        local_vc["transaction_verification"] = local_vc.get("transaction_verification", 0) + 1
+        print(f"Transaction_Verification: Processing verification {local_vc}")
 
         # Increment transaction_verification's own clock before returning
-        self.order_data[order_id]["vector_clock"]["transaction_verification"] = self.order_data[order_id]["vector_clock"].get("transaction_verification", 0) + 1
-
-        response.vector_clock.clock.update(self.order_data[order_id]["vector_clock"])  # send back updated vector clock
-        print(f"Transaction Verification: Processed order {order_id}. Result: {response.message}")
+        self.update_vector_clock(order_id, dict(request.vector_clock.clock))
+        print(f"Transaction Verification: Processed order {order_id}. Vector Clock: {self.order_data[order_id]['vector_clock']}")
+        response.vector_clock.clock.update(self.order_data[order_id]["vector_clock"])
         return response
 
     def ClearData(self, request, context):

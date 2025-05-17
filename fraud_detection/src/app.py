@@ -10,6 +10,13 @@ sys.path.insert(0, fraud_detection_grpc_path)
 import fraud_detection_pb2 as fraud_detection
 import fraud_detection_pb2_grpc as fraud_detection_grpc
 
+FILE = __file__ if '__file__' in globals() else os.getenv("PYTHONFILE", "")
+transaction_verification_grpc_path = os.path.abspath(os.path.join(FILE, '../../../utils/pb/transaction_verification'))
+sys.path.insert(0, transaction_verification_grpc_path)
+import transaction_verification_pb2 as transaction_verification
+import transaction_verification_pb2_grpc as transaction_verification_grpc
+
+
 import grpc
 from concurrent import futures
 
@@ -52,14 +59,35 @@ class FraudDetectionService(fraud_detection_grpc.FraudDetectionServiceServicer):
         else:
             response.is_valid = True
             response.message = "Transaction is not fraud."
+        
+        local_vc = self.order_data[order_id]["vector_clock"]
+        local_vc["fraud_detection"] = local_vc.get("fraud_detection", 0) + 1
+        print(f"Fraud_Detection: Processing fraud {local_vc}")
 
-        # Increment fraud_detection's own clock before returning
-        self.order_data[order_id]["vector_clock"]["fraud_detection"] = self.order_data[order_id]["vector_clock"].get("fraud_detection", 0) + 1
-
-        # Send back updated vector clock
+        # Increment fraud_detection's own clock before sending it on
+        self.update_vector_clock(order_id, dict(request.vector_clock.clock))
+        print(f"Fraud Detection: Processed order {order_id}. Vector Clock: {self.order_data[order_id]['vector_clock']}")
+        self.send_vector_clock_to_verification(order_id, self.order_data[order_id]['vector_clock'])
         response.vector_clock.clock.update(self.order_data[order_id]["vector_clock"])
-        print(f"Fraud Detection: Processed order {order_id}. Result: {response.message}")
         return response
+    
+    def send_vector_clock_to_verification(self, order_id, vector_clock_dict):
+        with grpc.insecure_channel('transaction_verification:50052') as channel:
+            stub = transaction_verification_grpc.TransactionVerificationServiceStub(channel)
+            request = fraud_detection.VectorClockRequest(order_id=order_id, vector_clock=fraud_detection.VectorClock(clock=vector_clock_dict))
+            try:
+                response = stub.ReceiveVectorClock(request)
+                print(f"Fraud Detection: Sent vector clock to Transaction Verification for order {order_id}. Response: {response.message}")
+            except grpc.RpcError as e:
+                print(f"Fraud Detection: Error sending vector clock to Transaction Verification: {e}")
+
+    def SendVectorClock(self, request, context):
+        order_id = request.order_id
+        if order_id in self.order_data:
+            self.send_vector_clock_to_verification(order_id, dict(request.vector_clock.clock))
+            return fraud_detection.VectorClockResponse(success=True, message="Vector clock sent.")
+        else:
+            return fraud_detection.VectorClockResponse(success=False, message="Order not found.")
 
     def ClearData(self, request, context):
         order_id = request.order_id
