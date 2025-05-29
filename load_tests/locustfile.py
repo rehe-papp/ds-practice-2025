@@ -38,7 +38,13 @@ class nonFraudulent(HttpUser):
 class Mixed(HttpUser):
     host = "http://localhost:8081" 
 
-    @task
+    def on_start(self):
+        self.order_a()
+        self.order_b()
+        self.order_c()
+        raise StopUser()
+
+    
     def order_a(self):
         order_data = {
             'user': {'name': 'John Doe', 'contact': 'john.doe@example.com'}, 
@@ -51,7 +57,7 @@ class Mixed(HttpUser):
         }
         self.client.post("/checkout", json=order_data)
 
-    @task
+    
     def order_b(self):
         order_data = {
             'user': {'name': 'Jane Doe', 'contact': 'jane.doe@example.com'}, 
@@ -63,7 +69,7 @@ class Mixed(HttpUser):
         }
         self.client.post("/checkout", json=order_data)
 
-    @task
+    
     def order_c(self):
         order_data = {
             'user': {'name': 'Jane Smith', 'contact': 'jane.smith@example.com'}, 
@@ -78,7 +84,12 @@ class Mixed(HttpUser):
 class Conflicting(HttpUser):
     host = "http://localhost:8081" 
 
-    @task
+    def on_start(self):
+        self.order_a()
+        self.order_b()
+        raise StopUser()
+
+    
     def order_a(self):
         order_data = {
             'user': {'name': 'John Doe', 'contact': 'john.doe@example.com'}, 
@@ -91,7 +102,7 @@ class Conflicting(HttpUser):
         }
         self.client.post("/checkout", json=order_data)
 
-    @task
+    
     def order_b(self):
         order_data = {
             'user': {'name': 'Jane Doe', 'contact': 'jane.doe@example.com'}, 
