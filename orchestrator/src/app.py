@@ -247,7 +247,7 @@ def index():
 
 def checkout():
     request_data = json.loads(request.data)
-    order_id = str(random.randint(0, 2**32-1))
+    order_id = str(random.randint(0, 2**30-1))
     book_ids = [int(item.get('bookid')) for item in request_data.get('items', []) if item.get('bookid') is not None]
     vector_clock = {"orchestrator": 1, "fraud_detection": 0, "transaction_verification": 0, "suggestions": 0}
 
@@ -299,7 +299,7 @@ def checkout():
 
         if verification_result.is_valid:
             queue_response = enqueue_order(int(order_id), request_data)
-            print(f"{queue_response.message}")
+            print(f"{queue_response}")
         else:
             broadcast_clear(order_id, vector_clock)
             return jsonify({"error": {"code": "400", "message": verification_result.message}}), 400
