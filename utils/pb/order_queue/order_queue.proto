@@ -14,7 +14,7 @@ message BookItem {
 
 
 message Order {
-    int64 orderId = 1;
+    int32 orderId = 1;
     string userName = 2;
     repeated BookItem items = 3;
 }
