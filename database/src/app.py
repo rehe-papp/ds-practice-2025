@@ -182,10 +182,10 @@ class DatabaseService(database_grpc.DatabaseServiceServicer):
     
     def initialize_book_stock(self):
         books_data = {
-            "Learning Python": {"stock": 7, "timestamp": int(time.time())},
-            "JavaScript - The Good Parts": {"stock": 15, "timestamp": int(time.time())},
-            "Domain-Driven Design: Tackling Complexity in the Heart of Software": {"stock": 15, "timestamp": int(time.time())},
-            "Design Patterns: Elements of Reusable Object-Oriented Software": {"stock": 15, "timestamp": int(time.time())},
+            "Learning Python": {"stock": 77777, "timestamp": int(time.time())},
+            "JavaScript - The Good Parts": {"stock": 1577777, "timestamp": int(time.time())},
+            "Domain-Driven Design: Tackling Complexity in the Heart of Software": {"stock": 157777, "timestamp": int(time.time())},
+            "Design Patterns: Elements of Reusable Object-Oriented Software": {"stock": 157777, "timestamp": int(time.time())},
         }
         self.store.update(books_data)
         print("Book store initialized:", self.store)
